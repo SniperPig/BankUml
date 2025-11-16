@@ -1,11 +1,8 @@
 package bank;
 
-import lombok.Getter;
-
 import java.util.ArrayList;
 import java.util.List;
 
-@Getter
 public abstract class Account {
     protected Customer customer;
     protected List<Transaction> transactions;
@@ -13,6 +10,14 @@ public abstract class Account {
     public Account(Customer customer) {
         this.customer = customer;
         this.transactions = new ArrayList<>();
+    }
+
+    public Customer getCustomer() {
+        return customer;
+    }
+
+    public List<Transaction> getTransactions() {
+        return transactions;
     }
 
     public void addTransaction(Transaction transaction) {

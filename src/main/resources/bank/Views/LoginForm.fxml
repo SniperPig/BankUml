@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+
+<AnchorPane xmlns:fx="http://javafx.com/fxml"
+            prefHeight="300" prefWidth="400">
+
+    <Label text="IT'S WORKING!"
+           layoutX="100"
+           layoutY="120"
+           style="-fx-font-size: 20px;"/>
+
+</AnchorPane>

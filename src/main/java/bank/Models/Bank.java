@@ -1,11 +1,8 @@
 package bank;
 
-import lombok.Getter;
-
 import java.util.ArrayList;
 import java.util.List;
 
-@Getter
 public class Bank {
     private final String name;
     private final List<Branch> branches;
@@ -13,6 +10,14 @@ public class Bank {
     public Bank(String name) {
         this.name = name;
         this.branches = new ArrayList<>();
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public List<Branch> getBranches() {
+        return branches;
     }
 
     public void addBranch(Branch branch) {

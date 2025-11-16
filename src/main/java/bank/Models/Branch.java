@@ -1,8 +1,5 @@
 package bank;
 
-import lombok.Getter;
-
-@Getter
 public class Branch {
     private final String address;
     private final Bank bank;
@@ -12,6 +9,14 @@ public class Branch {
         this.bank = bank;
         // to add to the bank
         bank.addBranch(this);
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public Bank getBank() {
+        return bank;
     }
 
     public void printBranchInfo() {
