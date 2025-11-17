@@ -1,4 +1,4 @@
-package bank;
+package bank.Models;
 
 public class Transaction {
     public void pay() {

@@ -1,4 +1,4 @@
-package bank;
+package bank.Models;
 
 import java.util.ArrayList;
 import java.util.List;

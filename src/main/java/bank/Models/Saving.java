@@ -1,4 +1,4 @@
-package bank;
+package bank.Models;
 
 public class Saving extends Account {
     public Saving(Customer customer) {

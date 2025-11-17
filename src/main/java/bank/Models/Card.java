@@ -1,4 +1,4 @@
-package bank;
+package bank.Models;
 
 public class Card extends Account {
     public Card(Customer customer) {

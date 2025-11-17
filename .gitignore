@@ -46,4 +46,7 @@ buildNumber.properties
 # JDT-specific (Eclipse Java Development Tools)
 .classpath
 
+#Database Connection Properties
+config/db.properties
+
 # End of https://www.toptal.com/developers/gitignore/api/java,maven

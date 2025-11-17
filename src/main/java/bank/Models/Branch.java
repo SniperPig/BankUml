@@ -1,4 +1,4 @@
-package bank;
+package bank.Models;
 
 public class Branch {
     private final String address;
