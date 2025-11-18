@@ -406,38 +406,6 @@ public class BankDb {
         }
     }
 
-    public void accountClose(int actorEmployeeId, int accountId) throws SQLException {
-        try (Connection conn = DbManager.getConnection();
-             CallableStatement stmt = conn.prepareCall("{CALL sp_account_close(?,?)}")) {
-
-            stmt.setInt(1, actorEmployeeId);
-            stmt.setInt(2, accountId);
-            stmt.execute();
-        }
-    }
-
-    public void accountFreeze(int actorEmployeeId, int accountId, String reason) throws SQLException {
-        try (Connection conn = DbManager.getConnection();
-             CallableStatement stmt = conn.prepareCall("{CALL sp_account_freeze(?,?,?)}")) {
-
-            stmt.setInt(1, actorEmployeeId);
-            stmt.setInt(2, accountId);
-            stmt.setString(3, reason);
-            stmt.execute();
-        }
-    }
-
-    public void accountUnfreeze(int actorEmployeeId, int accountId, String reason) throws SQLException {
-        try (Connection conn = DbManager.getConnection();
-             CallableStatement stmt = conn.prepareCall("{CALL sp_account_unfreeze(?,?,?)}")) {
-
-            stmt.setInt(1, actorEmployeeId);
-            stmt.setInt(2, accountId);
-            stmt.setString(3, reason);
-            stmt.execute();
-        }
-    }
-
     public List<Map<String, Object>> accountGetById(int accountId) throws SQLException {
         try (Connection conn = DbManager.getConnection();
              CallableStatement stmt = conn.prepareCall("{CALL sp_account_get_by_id(?)}")) {
