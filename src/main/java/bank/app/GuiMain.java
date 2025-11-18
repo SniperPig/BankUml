@@ -14,7 +14,7 @@ public class GuiMain extends Application {
                 GuiMain.class.getResource("/bank/views/LoginForm.fxml")
         );
 
-        Scene scene = new Scene(loader.load(), 800, 700);
+        Scene scene = new Scene(loader.load(), 900, 700);
 
         scene.getStylesheets().add(
                 GuiMain.class.getResource("/bank/css/login.css").toExternalForm()
