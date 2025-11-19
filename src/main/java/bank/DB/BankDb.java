@@ -200,6 +200,50 @@ public class BankDb {
         }
     }
 
+
+    /**
+     * Fetches customers by email. Returns empty list if none found.
+     */
+    public List<Map<String, Object>> customerGetByEmail(String email) throws SQLException {
+        String sql = """
+            SELECT customer_id, customer_name, customer_email, customer_phone,
+                dob, government_id, customer_address, password_hash,
+                security_question, security_answer_hash
+            FROM customer
+            WHERE customer_email = ?
+        """;
+
+        try (Connection conn = DbManager.getConnection();
+            PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, email);
+            try (ResultSet rs = stmt.executeQuery()) {
+                return ResultSetUtils.toList(rs);
+            }
+        }
+    }
+
+    /**
+     * Fetches all customers matching the search query across all branches.
+     * Returns Empty list if none found.
+     * Otherwise returns list of rows with customer info.
+     */
+    public List<Map<String, Object>> customerSearchAll(String query) throws SQLException {
+        try (Connection conn = DbManager.getConnection();
+            CallableStatement stmt = conn.prepareCall("{CALL sp_customer_search_all(?)}")) {
+
+            stmt.setString(1, query == null ? "" : query.trim());
+            boolean hasResult = stmt.execute();
+            if (hasResult) {
+                try (ResultSet rs = stmt.getResultSet()) {
+                    return ResultSetUtils.toList(rs);
+                }
+            }
+            return Collections.emptyList();
+        }
+    }   
+
+
     public List<Map<String, Object>> customerSearch(int branchId, String query) throws SQLException {
         try (Connection conn = DbManager.getConnection();
              CallableStatement stmt = conn.prepareCall("{CALL sp_customer_search(?,?)}")) {
