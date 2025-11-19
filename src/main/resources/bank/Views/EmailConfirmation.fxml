@@ -10,13 +10,13 @@
 
 <AnchorPane prefHeight="600.0" prefWidth="450.0"
             xmlns:fx="http://javafx.com/fxml"
-            fx:controller="bank.Controllers.ResetPasswordSecurityQuestionController"
+            fx:controller="bank.Controllers.ResetPasswordEmailConfirmationController"
             style="-fx-background-color: white;">
     <children>
         <VBox alignment="TOP_CENTER" spacing="20.0"
               AnchorPane.leftAnchor="0.0"
               AnchorPane.rightAnchor="0.0"
-              AnchorPane.topAnchor="50.0"
+              AnchorPane.topAnchor="70.0"
               AnchorPane.bottomAnchor="40.0">
             <children>
                 <Label text="Reset Password"
@@ -25,28 +25,20 @@
                            focusTraversable="false"
                            onAction="#handleBackToLogin"
                            style="-fx-font-size: 16px; -fx-text-fill: #6c4fff;"/>
-                <Hyperlink text="Back to Email Entry"
-                           focusTraversable="false"
-                           onAction="#handleBackToEmailEntry"
-                           style="-fx-font-size: 15px; -fx-text-fill: #6c4fff;"/>
-                <Label fx:id="emailContextLabel"
-                       style="-fx-font-size: 14px; -fx-text-fill: #666666;"/>
-                <VBox spacing="12.0" maxWidth="320.0">
+                <VBox spacing="12.0" maxWidth="320.0" alignment="CENTER_LEFT">
                     <children>
-                        <Label text="In order to reset your password, please first answer the following security question:"
+                        <Label text="Enter the email associated with your account to continue:"
                                wrapText="true"
                                style="-fx-font-size: 16px;"/>
-                        <Label fx:id="securityQuestionLabel"
-                               style="-fx-font-size: 16px; -fx-font-style: italic;"/>
-                        <TextField fx:id="answerField"
-                                   promptText="Enter answer here"
-                                   prefHeight="40.0"
-                                   style="-fx-font-size: 15px;"/>
+                        <TextField fx:id="emailField"
+                                   promptText="name@example.com"
+                                   prefHeight="45.0"
+                                   style="-fx-font-size: 16px;"/>
                     </children>
                 </VBox>
-                <Button text="Confirm"
-                        onAction="#handleConfirmAnswer"
-                        prefWidth="200.0"
+                <Button text="Continue"
+                        onAction="#handleContinue"
+                        prefWidth="220.0"
                         prefHeight="50.0"
                         style="-fx-background-color: #7563F6; -fx-text-fill: white; -fx-font-size: 18px; -fx-background-radius: 25px;"/>
             </children>
