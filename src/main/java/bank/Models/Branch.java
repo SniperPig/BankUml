@@ -1,25 +1,66 @@
 package bank.Models;
 
+/**
+ * Represents a physical branch of the bank.
+ *
+ * UML attributes:
+ *  - branchAddress : String
+ *  - bank          : Bank
+ *  - branchCode    : String
+ *
+ * UML operations:
+ *  + Branch(code: String, address: String, bank: Bank)
+ *  + getCode() : String
+ *  + getBranchAddress() : String
+ *  + getBank() : Bank
+ *  + printBranchInfo() : void
+ */
 public class Branch {
-    private final String address;
+
+    // === Attributes ===
+    private final String branchAddress;
     private final Bank bank;
+    private final String branchCode;
 
-    public Branch(String address, Bank bank) {
-        this.address = address;
+    // === Constructor ===
+    public Branch(String code, String address, Bank bank) {
+        this.branchCode = code;
+        this.branchAddress = address;
         this.bank = bank;
-        // to add to the bank
-        bank.addBranch(this);
+
+        // Old behavior: automatically register branch in its bank
+        if (bank != null) {
+            bank.addBranch(this);
+        }
     }
 
-    public String getAddress() {
-        return address;
+    // === UML Methods ===
+
+    /** Returns the branch code. */
+    public String getCode() {
+        return branchCode;
     }
 
+    /** Returns the branch address. */
+    public String getBranchAddress() {
+        return branchAddress;
+    }
+
+    /** Returns the bank this branch belongs to. */
     public Bank getBank() {
         return bank;
     }
 
+    /** Prints formatted branch information. */
     public void printBranchInfo() {
-        System.out.println("Branch " + address + " From Bank " + bank.getName());
+        String bankName = (bank != null) ? bank.getBankName() : "<no bank>";
+        System.out.println("Branch " + branchCode +
+                " at " + branchAddress +
+                " from Bank " + bankName);
+    }
+
+    // === Backwards compatibility (original code used getAddress()) ===
+    public String getAddress() {
+        return branchAddress;
     }
 }
