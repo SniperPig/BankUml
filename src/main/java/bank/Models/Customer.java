@@ -28,7 +28,15 @@ public class Customer {
     String securityQuestion;
     String securityAnswer;
 
-    // Constructor for creating a new customer
+    /**
+     * Constructor for creating a new customer
+     * @param name of the customer
+     * @param email of the customer
+     * @param phoneNumber of the customer
+     * @param dob of the customer
+     * @param govtID of the customer
+     * @param address of the customer
+     */
     public Customer(String name, String email, String phoneNumber,
                     LocalDate dob, String govtID, String address) {
         this.customerName = name;
@@ -39,71 +47,148 @@ public class Customer {
         this.customerAddress = address;
     }
 
-    // Get the customer ID
+    /**
+     * Get the customer ID
+     * @return customerID
+     */
     public int getCustomerID() {
         return customerID;
     }   
 
-    // Set the customer ID
+    /**
+     * Set the customer ID
+     * @param id to set
+     */
     public void setCustomerID(int id) {
         this.customerID = id;
     }
 
-    // Get the customer name
+    /**
+     * Get the customer name
+     * @return customerName
+     */
     public String getName() {
         return customerName;
     }
 
-    // Set the customer name
+    /**
+     * Set the customer name
+     * @param name to set
+     */
     public void setName(String name) {
         this.customerName = name;
     }
 
-    // Get the customer email
+    /**
+     * Get the customer email
+     * @return customerEmail
+     */
     public String getEmail() {
         return customerEmail;
     }       
 
-    // Set the customer email
+    /**
+     * Set the customer email
+     * @param email to set
+     */
     public void setEmail(String email) {
         this.customerEmail = email;
     }
 
-    // Get the customer phone number
+    /**
+     * Get the customer phone number
+     * @return customerPhonenumber
+     */
     public String getPhoneNumber() {
         return customerPhonenumber;
     }
 
-    // Set the customer phone number
+    /**
+     * Set the customer phone number
+     * @param phoneNumber to set
+     */
     public void setPhoneNumber(String phoneNumber) {
         this.customerPhonenumber = phoneNumber;
     }
 
-    // Get the customer date of birth
+    /**
+     * Get the customer date of birth
+     * @return customerDOB
+     */
     public LocalDate getDOB() {
         return customerDOB;
     }
 
-    // Set the customer date of birth
+    /**
+     * Set the customer date of birth
+     * @param dob to set
+     */
     public void setDOB(LocalDate dob) {
         this.customerDOB = dob;
     }
 
+    /**
+     * Get the customer government ID
+     * @return customerGovtID
+     */
+    public String getGovtID() {
+        return customerGovtID;
+    }
+
+    /**
+     * Set the customer government ID
+     * @param govtID to set
+     */
+    public void setGovtID(String govtID) {
+        this.customerGovtID = govtID;
+    }
+
+    /**
+     * Get the customer address
+     * @return customerAddress
+     */
+    public String getAddress() {
+        return customerAddress;
+    }
+
+    /**
+     * Set the customer address
+     * @param address to set
+     */
+    public void setAddress(String address) {
+        this.customerAddress = address;
+    }
+
+    /**
+     * Get the security question
+     * @return securityQuestion
+     */
     public String getSecurityQuestion() {
         return securityQuestion;
     }
 
+    /**
+     * Get the security answer
+     * @return securityAnswer
+     */
     public String getSecurityAnswer() {
         return securityAnswer;
     }
 
-    // Update contact information
+    /**
+     * Update contact information
+     * @param phoneNumber the new phone number
+     * @param address the new address
+     */
     public void updateContactInfo(String phoneNumber, String address) {
         this.customerPhonenumber = phoneNumber;
         this.customerAddress = address;
     }
 
-     // Set the customer password
+    /**
+     * Set the customer password
+     * @param password to set
+     */
     public void setPassword(String password) {
         if (password == null || password.isBlank()) {
             throw new IllegalArgumentException("Password cannot be empty.");
@@ -118,16 +203,29 @@ public class Customer {
         }
     }
 
+    /**
+     * Get the hashed password
+     * @return passwordHash
+     */
     public String getPasswordHash() {
         return passwordHash;
     }
 
+    /**
+     * Checks if the email already exists in the database.
+     * @param email to check
+     * @return true if email exists, false otherwise
+     */
     public boolean isEmailExisting(String email) throws SQLException {
         List<Map<String, Object>> rows = BANK_DB.customerGetByEmail(email);
         return !rows.isEmpty();
     }
 
-    // Validate the customer password
+    /**
+     * Validates the given password against the stored password hash.      
+     * @param password the plain text password to validate
+     * @return true if the password is valid, false otherwise
+     */
     public boolean isPasswordValid(String password) {
         if (password == null || passwordHash == null) {
             return false;
@@ -135,8 +233,11 @@ public class Customer {
         return passwordHash.equals(hashPassword(password));
     }
 
-    // Hash the password using SHA-256
-    // returns the hashed password as a hexadecimal string
+    /**
+     * Hashes the given password using SHA-256.
+     * @param password the plain text password
+     * @return the hashed password as a hexadecimal string
+     */
     private String hashPassword(String password) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
@@ -164,6 +265,18 @@ public class Customer {
     public static List<Customer> fetchCustomersFromDB(int branchId, String searchQuery) throws SQLException {
         List<Map<String, Object>> rows = BANK_DB.customerSearchAll(
                 searchQuery == null ? "" : searchQuery.trim());
+        List<Customer> customers = new ArrayList<>();
+        for (Map<String, Object> row : rows) {
+            customers.add(fromRow(row));
+        }
+        return customers;
+    }
+
+    /**
+     * Fetch all customers regardless of branch.
+     */
+    public static List<Customer> fetchAllCustomers() throws SQLException {
+        List<Map<String, Object>> rows = BANK_DB.fetchAllCustomers();
         List<Customer> customers = new ArrayList<>();
         for (Map<String, Object> row : rows) {
             customers.add(fromRow(row));

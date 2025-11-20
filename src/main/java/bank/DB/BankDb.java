@@ -224,6 +224,26 @@ public class BankDb {
     }
 
     /**
+     * Fetches all customers in the database no matter the branch.
+     * Returns empty list if none found.
+     */ 
+    public List<Map<String, Object>> fetchAllCustomers() throws SQLException {
+        String sql = """
+            SELECT customer_id, customer_name, customer_email, customer_phone,
+                dob, government_id, customer_address, password_hash,
+                security_question, security_answer_hash
+            FROM customer
+        """;
+
+        try (Connection conn = DbManager.getConnection();
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            ResultSet rs = stmt.executeQuery()) {
+
+            return ResultSetUtils.toList(rs);
+        }
+    }
+
+    /**
      * Fetches all customers matching the search query across all branches.
      * Returns Empty list if none found.
      * Otherwise returns list of rows with customer info.

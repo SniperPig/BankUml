@@ -1,9 +1,13 @@
 package bank.Controllers;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Locale;
-
+import bank.Models.Employee;
+import bank.Models.Customer;
+import java.util.List;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
@@ -19,7 +23,6 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
-import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
 
 public class TellerDashboardController {
@@ -38,110 +41,134 @@ public class TellerDashboardController {
     private ComboBox<String> searchCategoryBox;
 
     @FXML
-    private TableView<CustomerRecord> customerTable;
+    private TableView<Customer> customerTable;
 
     @FXML
-    private TableColumn<CustomerRecord, String> idColumn;
+    private TableColumn<Customer, String> idColumn;
 
     @FXML
-    private TableColumn<CustomerRecord, String> nameColumn;
+    private TableColumn<Customer, String> nameColumn;
 
     @FXML
-    private TableColumn<CustomerRecord, String> emailColumn;
+    private TableColumn<Customer, String> emailColumn;
 
     @FXML
-    private TableColumn<CustomerRecord, String> phoneColumn;
+    private TableColumn<Customer, String> phoneColumn;
 
     @FXML
-    private TableColumn<CustomerRecord, String> dobColumn;
+    private TableColumn<Customer, String> dobColumn;
 
     @FXML
-    private TableColumn<CustomerRecord, String> govIdColumn;
+    private TableColumn<Customer, String> govIdColumn;
 
     @FXML
-    private TableColumn<CustomerRecord, String> addressColumn;
+    private TableColumn<Customer, String> addressColumn;
 
-    private final ObservableList<CustomerRecord> masterData = FXCollections.observableArrayList();
-    private final FilteredList<CustomerRecord> filteredData = new FilteredList<>(masterData, record -> true);
+    private final ObservableList<Customer> masterData = FXCollections.observableArrayList();
+    private final FilteredList<Customer> filteredData = new FilteredList<>(masterData, record -> true);
 
-    // Initializes the controller class. This method is automatically called
-    // after the fxml file has been loaded.
+    
+    /**
+     * Initialize the Teller Dashboard
+     * When the dashboard is loaded, this method sets up the welcome message,
+     * search functionality, and populates the customer table with data.
+     * @throws SQLException
+     */
     @FXML
-    private void initialize() {
-        welcomeLabel.setText("Welcome, Teller");
+    private void initialize() throws SQLException{
+        // This part will be changed to actual logged in employee later
+        Employee employee = Employee.fetchEmployeeByID(1); // ***** This need to be changed to like logged in employere ******
+        // Set welcome message with employee's first name
+        welcomeLabel.setText("Welcome, " + employee.getName().split("\\s+")[0]);
 
         searchCategoryBox.setItems(FXCollections.observableArrayList(Arrays.asList(CATEGORIES)));
         searchCategoryBox.getSelectionModel().select("Name");
 
-        idColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
-        nameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
-        emailColumn.setCellValueFactory(new PropertyValueFactory<>("email"));
-        phoneColumn.setCellValueFactory(new PropertyValueFactory<>("phone"));
-        dobColumn.setCellValueFactory(new PropertyValueFactory<>("dateOfBirth"));
-        govIdColumn.setCellValueFactory(new PropertyValueFactory<>("governmentId"));
-        addressColumn.setCellValueFactory(new PropertyValueFactory<>("address"));
+        idColumn.setCellValueFactory(cell ->
+                new SimpleStringProperty(String.valueOf(cell.getValue().getCustomerID())));
+        nameColumn.setCellValueFactory(cell -> new SimpleStringProperty(safeString(cell.getValue().getName())));
+        emailColumn.setCellValueFactory(cell -> new SimpleStringProperty(safeString(cell.getValue().getEmail())));
+        phoneColumn.setCellValueFactory(cell -> new SimpleStringProperty(safeString(cell.getValue().getPhoneNumber())));
+        dobColumn.setCellValueFactory(cell -> {
+            if (cell.getValue().getDOB() == null) {
+                return new SimpleStringProperty("");
+            }
+            return new SimpleStringProperty(cell.getValue().getDOB().toString());
+        });
+        govIdColumn.setCellValueFactory(cell -> new SimpleStringProperty(safeString(cell.getValue().getGovtID())));
+        addressColumn.setCellValueFactory(cell -> new SimpleStringProperty(safeString(cell.getValue().getAddress())));
 
         customerTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         populateSampleData();
         customerTable.setItems(filteredData);
     }
-
-
-    // Populate with sample data for demonstration purposes for now 
-    // This  is used to populate the table with the customer records 
-    private void populateSampleData() {
-        // Sample data for now till we populate from database
-        masterData.addAll(
-                new CustomerRecord("000001", "Michael Scott", "mc@mail.com",
-                        "514 514 5115", "28-03-1999", "HLSN2399", "Scranton, PA"),
-                new CustomerRecord("000002", "Pam Beesly", "pam@mail.com",
-                        "514 513 2334", "07-03-1990", "ABE9933", "Scranton, PA"),
-                new CustomerRecord("000003", "Jim Halpert", "jim@mail.com",
-                        "514 445 1982", "14-10-1989", "HHH1200", "Austin, TX")
-        );
+ 
+    /**
+     * Populate the customer with sample data from the database
+     * This is used to fetch all customers from the database and populate the master data list.
+     * @throws SQLException
+     */
+    private void populateSampleData() throws SQLException {
+        
+        List<Customer> customers = Customer.fetchAllCustomers();
+        masterData.setAll(customers);
     }
 
     // Handles the search functionality based on user input and selected category
+    /**
+     * Handles the search functionality 
+     * This method filters the customer table based on the search keyword and selected category.
+     */
     @FXML
     private void handleSearch() {
         final String keyword = searchField.getText() == null ? "" : searchField.getText().trim();
         final String category = searchCategoryBox.getValue();
 
-        filteredData.setPredicate(record -> {
+        filteredData.setPredicate(customer -> {
             if (keyword.isBlank()) {
                 return true;
             }
-            final String value = recordValueByCategory(record, category);
+            final String value = recordValueByCategory(customer, category);
             return value.toLowerCase(Locale.ENGLISH).contains(keyword.toLowerCase(Locale.ENGLISH));
         });
     }
 
-    // Returns the value of the specified category from the customer record
-    private String recordValueByCategory(CustomerRecord record, String category) {
+    /**
+     * Records value by category
+     * This method retrieves the value of the specified category from the customer record.
+     * @param customer the customer record
+     * @param category the category to retrieve
+     * @return the value of the specified category
+     */
+    private String recordValueByCategory(Customer customer, String category) {
+        final String defaultValue = safeString(customer.getName());
         if (category == null) {
-            return record.getName();
+            return defaultValue;
         }
         
-        // Return the value based on the selected category for filtering
         return switch (category) {
-            case "ID" -> record.getId();
-            case "Email" -> record.getEmail();
-            case "Phone Number" -> record.getPhone();
-            case "Date of Birth" -> record.getDateOfBirth();
-            case "Government ID" -> record.getGovernmentId();
-            case "Address" -> record.getAddress();
-            default -> record.getName();
+            case "ID" -> String.valueOf(customer.getCustomerID());
+            case "Email" -> safeString(customer.getEmail());
+            case "Phone Number" -> safeString(customer.getPhoneNumber());
+            case "Date of Birth" -> customer.getDOB() == null ? "" : customer.getDOB().toString();
+            case "Government ID" -> safeString(customer.getGovtID());
+            case "Address" -> safeString(customer.getAddress());
+            default -> defaultValue;
         };
     }
 
-    // Handles the action of opening an account for the selected customer
+    /**
+     * Handles the action of opening a selected customer's account view
+     * Open account view for the selected customer in the table.
+     * @param event
+     */
     @FXML
     private void handleOpenAccount(ActionEvent event) {
-        CustomerRecord selected = customerTable.getSelectionModel().getSelectedItem();
+        Customer selected = customerTable.getSelectionModel().getSelectedItem();
         if (selected == null) {
             Alert alert = new Alert(Alert.AlertType.WARNING);
             alert.setHeaderText(null);
-            alert.setContentText("Please select an account to open.");
+            alert.setContentText("Please select a customer.");
             alert.showAndWait();
             return;
         }
@@ -149,12 +176,17 @@ public class TellerDashboardController {
         switchToAccountView(event, selected);
     }
 
-    private void switchToAccountView(ActionEvent event, CustomerRecord record) {
+    /**
+     * Switch to account view for the selected customer
+     * @param event
+     * @param customer
+     */
+    private void switchToAccountView(ActionEvent event, Customer customer) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/bank/Views/TellerAccountView.fxml"));
             Parent root = loader.load();
             TellerAccountViewController controller = loader.getController();
-            controller.populateWithCustomer(record);
+            controller.populateWithCustomer(customer);
 
             Scene scene = ((Node) event.getSource()).getScene();
             Stage stage = (Stage) scene.getWindow();
@@ -165,8 +197,9 @@ public class TellerDashboardController {
         }
     }
 
-
-    // Handles the action of creating a new account
+    /**
+     * Handles the action of creating a new customer account
+     */
     @FXML
     private void handleCreateAccount() {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -175,19 +208,29 @@ public class TellerDashboardController {
         alert.showAndWait();
     }
 
-    // Handles the action of updating password and security question
+    /**
+     * Handles the action of updating password and security question
+     * @param event
+     */
     @FXML
     private void handleUpdatePassword(ActionEvent event) {
         switchScene(event, "/bank/Views/UpdatePasswordSecurityQuestion.fxml");
     }
 
-    // Handles the action of logging out
+    /**
+     * Handles the logout action and switches back to the login form
+     * @param event
+     */ 
     @FXML
     private void handleLogout(ActionEvent event) {
         switchScene(event, "/bank/Views/LoginForm.fxml");
     }
 
-    // Switches the scene to the specified FXML resource
+    /**
+     * Switches the scene to the specified FXML resource
+     * @param event
+     * @param resourcePath
+     */
     private void switchScene(ActionEvent event, String resourcePath) {
         try {
             Parent root = FXMLLoader.load(getClass().getResource(resourcePath));
@@ -200,55 +243,12 @@ public class TellerDashboardController {
         }
     }
 
-
-    // Need to changed to actual Customer model from database later
-    public static class CustomerRecord {
-        private final String id;
-        private final String name;
-        private final String email;
-        private final String phone;
-        private final String dateOfBirth;
-        private final String governmentId;
-        private final String address;
-
-        public CustomerRecord(String id, String name, String email,
-                              String phone, String dateOfBirth,
-                              String governmentId, String address) {
-            this.id = id;
-            this.name = name;
-            this.email = email;
-            this.phone = phone;
-            this.dateOfBirth = dateOfBirth;
-            this.governmentId = governmentId;
-            this.address = address;
-        }
-
-        public String getId() {
-            return id;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public String getEmail() {
-            return email;
-        }
-
-        public String getPhone() {
-            return phone;
-        }
-
-        public String getDateOfBirth() {
-            return dateOfBirth;
-        }
-
-        public String getGovernmentId() {
-            return governmentId;
-        }
-
-        public String getAddress() {
-            return address;
-        }
+    /**
+     * Safely returns a non-null string
+     * @param value
+     * @return
+     */
+    private String safeString(String value) {
+        return value == null ? "" : value;
     }
 }

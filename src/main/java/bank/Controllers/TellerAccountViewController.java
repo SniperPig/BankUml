@@ -1,7 +1,14 @@
 package bank.Controllers;
 
+import bank.Models.Account;
+import bank.Models.Customer;
+import bank.Models.Transaction;
 import java.io.IOException;
-
+import java.sql.SQLException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -14,96 +21,129 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
-import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
 
 public class TellerAccountViewController {
+
+    private static final DateTimeFormatter DATE_FORMATTER =
+            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
     @FXML
     private Label accountHeading;
 
     @FXML
-    private TableView<AccountRow> accountsTable;
+    private TableView<Account> accountsTable;
 
     @FXML
-    private TableColumn<AccountRow, String> accountTypeColumn;
+    private TableColumn<Account, String> accountTypeColumn;
 
     @FXML
-    private TableColumn<AccountRow, String> accountNumberColumn;
+    private TableColumn<Account, String> accountNumberColumn;
 
     @FXML
-    private TableColumn<AccountRow, String> accountBalanceColumn;
+    private TableColumn<Account, String> accountBalanceColumn;
 
     @FXML
-    private TableView<TransactionRow> transactionsTable;
+    private TableView<Transaction> transactionsTable;
 
     @FXML
-    private TableColumn<TransactionRow, String> transactionDateColumn;
+    private TableColumn<Transaction, String> transactionDateColumn;
 
     @FXML
-    private TableColumn<TransactionRow, String> transactionDescriptionColumn;
+    private TableColumn<Transaction, String> transactionDescriptionColumn;
 
     @FXML
-    private TableColumn<TransactionRow, String> transactionAmountColumn;
+    private TableColumn<Transaction, String> transactionAmountColumn;
 
     @FXML
-    private TableColumn<TransactionRow, String> transactionBalanceColumn;
+    private TableColumn<Transaction, String> transactionBalanceColumn;
 
-    private final ObservableList<AccountRow> accounts = FXCollections.observableArrayList();
-    private final ObservableList<TransactionRow> transactions = FXCollections.observableArrayList();
+    private final ObservableList<Account> accounts = FXCollections.observableArrayList();
+    private final ObservableList<Transaction> transactions = FXCollections.observableArrayList();
+    private Customer currentCustomer;
 
-    // Initialize the Teller Account View 
+    /**
+     * Initializes the controller class. This method is automatically called
+     * after the FXML file has been loaded.
+     */
     @FXML
     private void initialize() {
-        accountTypeColumn.setCellValueFactory(new PropertyValueFactory<>("type"));
-        accountNumberColumn.setCellValueFactory(new PropertyValueFactory<>("number"));
-        accountBalanceColumn.setCellValueFactory(new PropertyValueFactory<>("balance"));
-        transactionDateColumn.setCellValueFactory(new PropertyValueFactory<>("date"));
-        transactionDescriptionColumn.setCellValueFactory(new PropertyValueFactory<>("description"));
-        transactionAmountColumn.setCellValueFactory(new PropertyValueFactory<>("amount"));
-        transactionBalanceColumn.setCellValueFactory(new PropertyValueFactory<>("balance"));
+        accountTypeColumn.setCellValueFactory(cell ->
+                new SimpleStringProperty(cell.getValue().getAccountType()));
+        accountNumberColumn.setCellValueFactory(cell ->
+                new SimpleStringProperty(cell.getValue().getAccountNumber()));
+        accountBalanceColumn.setCellValueFactory(cell ->
+                new SimpleStringProperty(formatCurrency(cell.getValue().getBalance())));
+
+        transactionDateColumn.setCellValueFactory(cell ->
+                new SimpleStringProperty(formatDate(cell.getValue().getCreatedAt())));
+        transactionDescriptionColumn.setCellValueFactory(cell ->
+                new SimpleStringProperty(safeString(cell.getValue().getTransactionType())));
+        transactionAmountColumn.setCellValueFactory(cell ->
+                new SimpleStringProperty(formatCurrency(cell.getValue().getAmount())));
+        transactionBalanceColumn.setCellValueFactory(cell ->
+                new SimpleStringProperty(safeString(cell.getValue().getStatus())));
 
         accountsTable.setItems(accounts);
         transactionsTable.setItems(transactions);
+
+        accountsTable.getSelectionModel().selectedItemProperty().addListener((obs, oldAcc, newAcc) -> {
+            if (newAcc != null) {
+                loadTransactionsForAccount(newAcc);
+            } else {
+                transactions.clear();
+            }
+        });
     }
 
-    // Populate the view with data from database 
-    public void populateWithCustomer(TellerDashboardController.CustomerRecord record) {
-        accountHeading.setText(record.getName() + "'s Account");
-
-        accounts.setAll(
-                new AccountRow("Savings", "132902442", "$10,042"),
-                new AccountRow("Checking", "222233334", "$2,950")
-        );
-
-        transactions.setAll(
-                new TransactionRow("01/04/2025", "Withdrawal from account.", "$100", "$10,042"),
-                new TransactionRow("28/03/2025", "Deposit received.", "$500", "$10,142"),
-                new TransactionRow("20/03/2025", "Transfer to Checking.", "$300", "$9,642")
-        );
+    /**
+     * Populates the view with the specified customer's information
+     * @param customer the customer whose information is to be displayed
+     */
+    public void populateWithCustomer(Customer customer) {
+        this.currentCustomer = customer;
+        // Set heading to customer's first name
+        accountHeading.setText(customer.getName().split("\\s+")[0] + "'s Accounts");
+        loadAccountsForCustomer(customer.getCustomerID());
     }
 
-    // Handles the back button to return to teller's dashboard
+    /**
+     * Handles the action of going back to the dashboard
+     * @param event the action event triggered by the back button
+     */
     @FXML
     private void handleBackToDashboard(ActionEvent event) {
         switchScene(event, "/bank/Views/TellerDashboard.fxml");
     }
 
+    /**
+     * Handles the withdraw action
+     */
     @FXML
     private void handleWithdraw() {
         showActionAlert("Withdraw");
     }
 
+    /**
+     * Handles the deposit action
+     */
     @FXML
     private void handleDeposit() {
         showActionAlert("Deposit");
     }
 
+    /**
+     * Handles the transfer action
+     */
     @FXML
     private void handleTransfer() {
         showActionAlert("Transfer");
     }
 
+    /**
+     * Handles the logout action and switches back to the login form
+     * @param event the action event triggered by the logout button
+     */
     @FXML
     private void handleLogout(ActionEvent event) {
         switchScene(event, "/bank/Views/LoginForm.fxml");
@@ -114,7 +154,8 @@ public class TellerAccountViewController {
     private void showActionAlert(String action) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setHeaderText(null);
-        alert.setContentText(action + " flow not implemented yet.");
+        String target = currentCustomer == null ? "customer" : currentCustomer.getName();
+        alert.setContentText(action + " flow not implemented yet for " + target + ".");
         alert.showAndWait();
     }
 
@@ -131,61 +172,82 @@ public class TellerAccountViewController {
         }
     }
 
-    // This is only a placeholder class for customer data
-    // to be replaced with actual Customer model from database later
-    public static class AccountRow {
-        private final String type;
-        private final String number;
-        private final String balance;
-
-        public AccountRow(String type, String number, String balance) {
-            this.type = type;
-            this.number = number;
-            this.balance = balance;
-        }
-
-        public String getType() {
-            return type;
-        }
-
-        public String getNumber() {
-            return number;
-        }
-
-        public String getBalance() {
-            return balance;
+    /**
+     * Loads accounts for the specified customer ID
+     * @param customerId the ID of the customer
+     */
+    private void loadAccountsForCustomer(int customerId) {
+        try {
+            List<Account> fetchedAccounts = Account.fetchAccountsByCustomer(customerId);
+            accounts.setAll(fetchedAccounts);
+            if (!fetchedAccounts.isEmpty()) {
+                Account first = fetchedAccounts.get(0);
+                accountsTable.getSelectionModel().select(first);
+                loadTransactionsForAccount(first);
+            } else {
+                transactions.clear();
+            }
+        } catch (SQLException e) {
+            showError("Unable to load accounts.", e);
+            accounts.clear();
+            transactions.clear();
         }
     }
 
-     // This is only a placeholder class for customer data
-    // to be replaced with actual Customer model from database later
-    public static class TransactionRow {
-        private final String date;
-        private final String description;
-        private final String amount;
-        private final String balance;
-
-        public TransactionRow(String date, String description, String amount, String balance) {
-            this.date = date;
-            this.description = description;
-            this.amount = amount;
-            this.balance = balance;
+    /**
+     * Loads transactions for the specified account
+     * @param account the account for which to load transactions
+     */
+    private void loadTransactionsForAccount(Account account) {
+        try {
+            List<Transaction> fetchedTransactions =
+                    Transaction.fetchRecentTransactionsByAccount(account.getAccountId(), 15);
+            transactions.setAll(fetchedTransactions);
+        } catch (SQLException e) {
+            showError("Unable to load transactions.", e);
+            transactions.clear();
         }
+    }
 
-        public String getDate() {
-            return date;
-        }
+    /**
+     * Shows an error alert with the specified message and exception details
+     * @param message the error message to display
+     * @param e the exception that occurred
+     */
+    private void showError(String message, Exception e) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setHeaderText(message);
+        alert.setContentText(e.getMessage());
+        alert.showAndWait();
+    }
 
-        public String getDescription() {
-            return description;
-        }
+    /**
+     * Formats a double value as currency
+     * @param amount the amount to format
+     * @return the formatted currency string
+     */
+    private String formatCurrency(double amount) {
+        return String.format("$%,.2f", amount);
+    }
 
-        public String getAmount() {
-            return amount;
+    /**
+     * Formats a LocalDateTime object as a string
+     * @param dateTime the date and time to format
+     * @return the formatted date string
+     */
+    private String formatDate(LocalDateTime dateTime) {
+        if (dateTime == null) {
+            return "";
         }
+        return DATE_FORMATTER.format(dateTime);
+    }
 
-        public String getBalance() {
-            return balance;
-        }
+    /**
+     * Returns a safe string, replacing null with an empty string
+     * @param value the string value to check
+     * @return a non-null string
+     */
+    private String safeString(String value) {
+        return value == null ? "" : value;
     }
 }
