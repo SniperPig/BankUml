@@ -9,12 +9,18 @@
             prefWidth="800" prefHeight="700"
             stylesheets="@../css/CreateAccount.css">
 
-    <children>
+        <children>
         <VBox spacing="18" alignment="CENTER"
               AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0"
               AnchorPane.topAnchor="0" AnchorPane.bottomAnchor="0">
 
             <Label text="Create New Account" styleClass="title"/>
+
+            <!-- NEW: Back to Home link under the title -->
+            <Hyperlink text="Back to Home"
+                       focusTraversable="false"
+                       onAction="#handleBackToHome"
+                       style="-fx-font-size: 16px; -fx-text-fill: #6c4fff;"/>
 
             <VBox spacing="10" alignment="CENTER_LEFT" maxWidth="420"
                   styleClass="form-container">
@@ -35,11 +41,20 @@
                 <ComboBox fx:id="branchBox" promptText="Select Branch"/>
             </VBox>
 
+            <!-- Only the purple Create button now -->
             <HBox spacing="20" alignment="CENTER">
-                <Button fx:id="createBtn" text="Create Account" onAction="#handleCreate"/>
-                <Button fx:id="cancelBtn" text="Cancel" onAction="#handleCancel"/>
+                <Button fx:id="createBtn"
+                        text="Create Account"
+                        onAction="#handleCreate"/>
             </HBox>
 
         </VBox>
+
+        <!-- NEW: Logout link bottom-right, same style as other screens -->
+        <Hyperlink text="Logout"
+                   onAction="#handleLogout"
+                   style="-fx-font-size: 15px; -fx-text-fill: #6c4fff;"
+                   AnchorPane.bottomAnchor="20.0"
+                   AnchorPane.rightAnchor="20.0"/>
     </children>
 </AnchorPane>

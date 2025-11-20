@@ -9,6 +9,13 @@ import javafx.stage.Stage;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.List;
+import javafx.event.ActionEvent;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+
+import java.io.IOException;
 
 /**
  * Controller for CreateAccountForm.fxml.
@@ -140,6 +147,39 @@ public class CreateAccountController {
             return false;
         }
         return true;
+    }
+
+        /**
+     * "Back to Home" under the title – just closes this window
+     * and returns the user to the Teller dashboard behind it.
+     */
+    @FXML
+    private void handleBackToHome(ActionEvent event) {
+        switchScene(event, "/bank/Views/LoginForm.fxml");
+    }
+
+    /**
+     * Logout hyperlink at the bottom-right.
+     * Sends the user back to the LoginForm.
+     */
+    @FXML
+    private void handleLogout(ActionEvent event) {
+        switchScene(event, "/bank/Views/LoginForm.fxml");
+    }
+
+    /**
+     * Generic helper for swapping scenes, same pattern as other controllers.
+     */
+    private void switchScene(ActionEvent event, String resourcePath) {
+        try {
+            Parent root = FXMLLoader.load(getClass().getResource(resourcePath));
+            Scene scene = ((Node) event.getSource()).getScene();
+            Stage stage = (Stage) scene.getWindow();
+            scene.setRoot(root);
+            stage.sizeToScene();
+        } catch (IOException ex) {
+            throw new RuntimeException("Unable to load " + resourcePath, ex);
+        }
     }
 
     // UI Helpers

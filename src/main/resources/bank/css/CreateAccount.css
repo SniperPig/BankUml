@@ -1,34 +1,30 @@
 .root {
-    -fx-background-color: #f2f2f2;
+    -fx-background-color: white;
 }
 
 .title {
     -fx-font-size: 32px;
     -fx-font-weight: bold;
-    -fx-padding: 20px 0 10px 0;
 }
 
 .form-container {
-    -fx-background-color: white;
-    -fx-padding: 25px;
-    -fx-border-radius: 12px;
+    -fx-padding: 20px;
+    -fx-background-color: #f9fafb;
     -fx-background-radius: 12px;
-    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 12, 0.1, 0, 3);
+    -fx-spacing: 10px;
 }
 
-.text-field, .password-field, .combo-box {
-    -fx-pref-height: 42px;
-}
-
+/* All buttons on this screen → purple, like the other forms */
 .button {
     -fx-pref-width: 160px;
-    -fx-pref-height: 40px;
-    -fx-background-color: #3b82f6;
-    -fx-background-radius: 10px;
+    -fx-pref-height: 45px;
+    -fx-background-color: #7563F6;
+    -fx-background-radius: 25px;
     -fx-text-fill: white;
+    -fx-font-size: 16px;
     -fx-font-weight: bold;
 }
 
 .button:hover {
-    -fx-background-color: #2563eb;
+    -fx-background-color: #5d49f0;
 }
