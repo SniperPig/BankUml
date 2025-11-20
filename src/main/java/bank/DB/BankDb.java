@@ -1,9 +1,12 @@
 package bank.DB;
 
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+
+import bank.Models.Branch;
 
 public class BankDb {
 
@@ -705,4 +708,37 @@ public class BankDb {
             stmt.execute();
         }
     }
+
+/* =========================================================
+   H) BRANCH LOOKUP (needed for Create Account)
+   ========================================================= */
+
+/**
+ * Returns all branches from the database as Branch model objects.
+ * Uses a direct SELECT on the branch table.
+ */
+public List<Branch> getAllBranches() throws SQLException {
+
+    String sql = "SELECT branch_id, branch_code, branch_name, branch_address FROM branch";
+
+    try (Connection conn = DbManager.getConnection();
+         PreparedStatement stmt = conn.prepareStatement(sql);
+         ResultSet rs = stmt.executeQuery()) {
+
+        List<Branch> result = new ArrayList<>();
+
+        while (rs.next()) {
+            int branchId   = rs.getInt("branch_id");
+            String code    = rs.getString("branch_code");
+            String name    = rs.getString("branch_name");
+            String address = rs.getString("branch_address");
+
+            Branch b = new Branch(branchId, code, name, address);
+            result.add(b);
+        }
+
+        return result;
+    }
+}
+
 }

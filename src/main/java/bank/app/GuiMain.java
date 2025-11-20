@@ -11,16 +11,16 @@ public class GuiMain extends Application {
     public void start(Stage stage) throws Exception {
 
         FXMLLoader loader = new FXMLLoader(
-                GuiMain.class.getResource("/bank/views/LoginForm.fxml")
+                GuiMain.class.getResource("/bank/Views/CreateAccountForm.fxml")
         );
 
         Scene scene = new Scene(loader.load(), 900, 700);
 
         scene.getStylesheets().add(
-                GuiMain.class.getResource("/bank/css/login.css").toExternalForm()
+                GuiMain.class.getResource("/bank/css/CreateAccount.css").toExternalForm()
         );
 
-        stage.setTitle("MyBankUML Login");
+        stage.setTitle("MyBankUML Create Account");
         stage.setScene(scene);
         stage.show();
     }

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="bank.Controllers.CreateAccountController"
+            prefWidth="800" prefHeight="700"
+            stylesheets="@../css/CreateAccount.css">
+
+    <children>
+        <VBox spacing="18" alignment="CENTER"
+              AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0"
+              AnchorPane.topAnchor="0" AnchorPane.bottomAnchor="0">
+
+            <Label text="Create New Account" styleClass="title"/>
+
+            <VBox spacing="10" alignment="CENTER_LEFT" maxWidth="420"
+                  styleClass="form-container">
+
+                <TextField fx:id="nameField" promptText="Full Name"/>
+                <TextField fx:id="emailField" promptText="Email"/>
+                <TextField fx:id="phoneField" promptText="Phone Number"/>
+                <DatePicker fx:id="dobPicker" promptText="Date of Birth"/>
+
+                <TextField fx:id="govIdField" promptText="Government ID"/>
+                <TextField fx:id="addressField" promptText="Address"/>
+
+                <PasswordField fx:id="passwordField" promptText="Password"/>
+
+                <ComboBox fx:id="securityQuestionBox" promptText="Security Question"/>
+                <TextField fx:id="securityAnswerField" promptText="Security Answer"/>
+
+                <ComboBox fx:id="branchBox" promptText="Select Branch"/>
+            </VBox>
+
+            <HBox spacing="20" alignment="CENTER">
+                <Button fx:id="createBtn" text="Create Account" onAction="#handleCreate"/>
+                <Button fx:id="cancelBtn" text="Cancel" onAction="#handleCancel"/>
+            </HBox>
+
+        </VBox>
+    </children>
+</AnchorPane>

@@ -1,0 +1,34 @@
+.root {
+    -fx-background-color: #f2f2f2;
+}
+
+.title {
+    -fx-font-size: 32px;
+    -fx-font-weight: bold;
+    -fx-padding: 20px 0 10px 0;
+}
+
+.form-container {
+    -fx-background-color: white;
+    -fx-padding: 25px;
+    -fx-border-radius: 12px;
+    -fx-background-radius: 12px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 12, 0.1, 0, 3);
+}
+
+.text-field, .password-field, .combo-box {
+    -fx-pref-height: 42px;
+}
+
+.button {
+    -fx-pref-width: 160px;
+    -fx-pref-height: 40px;
+    -fx-background-color: #3b82f6;
+    -fx-background-radius: 10px;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+}
+
+.button:hover {
+    -fx-background-color: #2563eb;
+}
