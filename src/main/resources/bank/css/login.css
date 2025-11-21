@@ -1,0 +1,150 @@
+﻿.root {
+    -fx-background-color: #FFFFFF;
+    -fx-padding: 60 24 60 24;
+    -fx-font-family: 'Times-New-Roman';
+}
+
+.form {
+    -fx-spacing: 28;
+    -fx-max-width: 400;
+    -fx-pref-width: 380;
+}
+
+.title {
+    -fx-font-family: 'Times-New-Roman';
+    -fx-font-size: 50px;
+    -fx-font-weight: 900;
+    -fx-text-fill: #1a1a1a;
+}
+
+/* For both fields */
+.fieldset {
+    -fx-spacing: 12;
+    -fx-padding: 0 4 0 4;
+}
+
+.label {
+    -fx-font-size: 15px;
+    -fx-text-fill: #2c2c2c;
+    -fx-font-weight: 600;
+}
+
+.input {
+    -fx-pref-width: 340;
+    -fx-pref-height: 38;
+    -fx-background-color: white;
+    -fx-border-color: #dcdfe6;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 0 10 0 10;
+    -fx-font-size: 14px;
+}
+
+.input:focused {
+    -fx-border-color: #7a73f8;
+    -fx-effect: dropshadow(gaussian, rgba(122, 115, 248, 0.25), 8, 0.15, 0, 0);
+}
+
+.input .text {
+    -fx-fill: #4a4a4a;
+}
+
+.input .prompt-text {
+    -fx-fill: #b3b3b3;
+}
+
+.forgot {
+    -fx-padding: 2 0 0 0;
+    -fx-text-fill: #7a73f8;
+    -fx-font-size: 13px;
+    -fx-underline: false;
+}
+
+.forgot:hover {
+    -fx-text-fill: #5f56e3;
+}
+
+/* This is the container for our toggle */
+.account-toggle-wrapper {
+    -fx-background-color: #b3b0ff;
+    -fx-padding: 6 8;
+    -fx-background-radius: 32;
+    -fx-border-color: #8a87f0;
+    -fx-border-radius: 32;
+    -fx-spacing: 8;
+    -fx-max-width: 340;
+    -fx-pref-width: 340;
+    -fx-alignment: center;
+}
+
+/* And this is the toggle itself */
+.toggle-button.account-toggle {
+    -fx-background-color: transparent;
+    -fx-padding: 10 32;
+    -fx-font-size: 16px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #4e4d6f;
+    -fx-cursor: hand;
+    -fx-background-radius: 28;
+    -fx-border-color: transparent;
+}
+
+/* This is what the selected toggle section should do */
+.toggle-button.account-toggle:selected {
+    -fx-background-color: white;
+    -fx-text-fill: #2f2f2f;
+    -fx-background-radius: 28;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.12), 6, 0.2, 0, 1);
+}
+
+/* What happens to text of selected section */
+.toggle-button.account-toggle:selected .text {
+    -fx-fill: black;
+}
+
+/* Remove default internal padding */
+.toggle-button.account-toggle {
+    -fx-background-insets: 0;
+}
+
+/* Keep the active look even when hovering / focused / armed (when the mouse clicks, but hasn't released) */
+.toggle-button.account-toggle:selected,
+.toggle-button.account-toggle:selected:hover,
+.toggle-button.account-toggle:selected:focused,
+.toggle-button.account-toggle:selected:armed {
+    -fx-background-color: white;
+    -fx-text-fill: #2f2f2f;
+    -fx-background-insets: 0;
+    -fx-padding: 10 32;
+}
+
+/* Preserve inherited background on (keyboard) focus */
+.toggle-button.account-toggle:focused {
+    -fx-background-insets: 0;
+    -fx-background-color: inherit;
+}
+
+.login-btn {
+    -fx-background-color: #7a73f8;
+    -fx-text-fill: white;
+    -fx-font-size: 16px;
+    -fx-font-weight: 800;
+    -fx-padding: 12 24 12 24;
+    -fx-background-radius: 10;
+    -fx-font-family: 'Times-New-Roman';
+    -fx-cursor: hand;
+    -fx-pref-width: 260;
+    -fx-pref-height: 46;
+}
+
+.login-btn:hover {
+    -fx-background-color: #6a63e8;
+}
+
+.login-btn:pressed {
+    -fx-background-color: #5b53cf;
+}
+
+.login-btn:focused {
+    -fx-border-color: transparent;
+}

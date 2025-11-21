@@ -1,14 +1,80 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.layout.*?>
+<!-- Imports required for JavaFx-->
+<?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
 
 <AnchorPane xmlns:fx="http://javafx.com/fxml"
-            prefHeight="300" prefWidth="400">
+            fx:controller="bank.Controllers.LoginController"
+            prefHeight="680.0" prefWidth="420.0"
+            styleClass="root"> <!-- This is what connects to LoginController for functionalities-->
 
-    <Label text="IT'S WORKING!"
-           layoutX="100"
-           layoutY="120"
-           style="-fx-font-size: 20px;"/>
+    <fx:define> <!-- This is what ensures only Customer or Employee can be selected -->
+        <ToggleGroup fx:id="roleGroup"/>
+    </fx:define>
 
+    <!-- This is our main container-->
+    <StackPane alignment="CENTER"
+               AnchorPane.topAnchor="0.0"
+               AnchorPane.leftAnchor="0.0"
+               AnchorPane.rightAnchor="0.0"
+               AnchorPane.bottomAnchor="0.0"
+               style="-fx-background-color: white;">
+
+        <padding>
+            <Insets top="60.0" right="0.0" bottom="60.0" left="0.0"/>
+        </padding>
+
+        <!-- Sub-container that contains our content -->    
+        <VBox alignment="TOP_CENTER"
+              spacing="26"
+              styleClass="form"
+              maxWidth="400.0"
+              prefWidth="380.0"
+              fillWidth="false">
+
+            <Label text="Login"
+                   styleClass="title"
+                   style="-fx-font-size: 40px; -fx-font-weight: bold; -fx-font-family: 'Times-New-Roman';"/>
+
+            <!-- Sub container that contains input information and forgot password-->
+            <VBox spacing="12" alignment="CENTER_LEFT" styleClass="fieldset">
+                <Label text="Username" styleClass="label"/>
+                <TextField fx:id="usernameField"
+                           promptText="user@email.com"
+                           styleClass="input"/>
+
+                <Label text="Password" styleClass="label"/>
+                <PasswordField fx:id="passwordField"
+                               promptText="********"
+                               styleClass="input"/>
+
+                <Hyperlink fx:id="forgotLink"
+                           text="Forgot password?"
+                           styleClass="forgot"/>
+            </VBox>
+
+            <!-- And this is for our toggle switch-->
+            <HBox alignment="CENTER"
+                  styleClass="account-toggle-wrapper"
+                  maxWidth="340.0"
+                  prefWidth="340.0"
+                  spacing="8">
+                <ToggleButton fx:id="customerToggle"
+                              text="Customer"
+                              toggleGroup="$roleGroup"
+                              selected="true"
+                              styleClass="account-toggle"/>
+                <ToggleButton fx:id="employeeToggle"
+                              text="Employee"
+                              toggleGroup="$roleGroup"
+                              styleClass="account-toggle"/>
+            </HBox>
+
+            <Button fx:id="loginButton"
+                    text="Login"
+                    styleClass="login-btn"/>
+        </VBox>
+    </StackPane>
 </AnchorPane>
