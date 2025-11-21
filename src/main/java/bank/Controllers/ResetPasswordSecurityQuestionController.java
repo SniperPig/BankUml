@@ -1,7 +1,7 @@
 package bank.Controllers;
 
 import java.io.IOException;
-import bank.Models.Customer;
+import bank.Models.PasswordResettable;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -15,7 +15,7 @@ import javafx.stage.Stage;
 
 public class ResetPasswordSecurityQuestionController {
     private String emailAddress;
-    private Customer customer; 
+    private PasswordResettable account; 
 
     @FXML
     private TextField answerField;
@@ -45,13 +45,13 @@ public class ResetPasswordSecurityQuestionController {
     }
 
     /**
-     * Sets the customer whose security question is to be displayed.
+     * Sets the account whose security question is to be displayed.
      */
-    public void setCustomer(Customer customer) {
-        this.customer = customer;
+    public void setAccount(PasswordResettable account) {
+        this.account = account;
         updateEmailContext();
-         if (securityQuestionLabel != null && customer.getSecurityQuestion() != null) {
-            securityQuestionLabel.setText(customer.getSecurityQuestion());
+         if (securityQuestionLabel != null && account.getSecurityQuestion() != null) {
+            securityQuestionLabel.setText(account.getSecurityQuestion());
         }
     }
     
@@ -64,8 +64,8 @@ public class ResetPasswordSecurityQuestionController {
         }
 
         String emailToDisplay = emailAddress;
-        if ((emailToDisplay == null || emailToDisplay.isBlank()) && customer != null) {
-            emailToDisplay = customer.getEmail();
+        if ((emailToDisplay == null || emailToDisplay.isBlank()) && account != null) {
+            emailToDisplay = account.getEmail();
         }
 
         if (emailToDisplay == null || emailToDisplay.isBlank()) {
@@ -85,12 +85,12 @@ public class ResetPasswordSecurityQuestionController {
         }
 
         String provided = answerField.getText();
-        if (customer == null) {
-            showError("Unable to validate answer because no customer context is available.");
+        if (account == null) {
+            showError("Unable to validate answer because no account context is available.");
             return;
         }
 
-        if (provided != null && provided.trim().equalsIgnoreCase(customer.getSecurityAnswer())) {
+        if (provided != null && provided.trim().equalsIgnoreCase(account.getSecurityAnswer())) {
             goToResetForm(event);
         } else {
             showError("Incorrect answer. Please try again.");
@@ -107,7 +107,7 @@ public class ResetPasswordSecurityQuestionController {
         Parent root = loader.load();
 
         ResetPasswordFormController controller = loader.getController();
-        controller.setCustomer(customer);   // add this setter in the form controller
+        controller.setAccount(account);
 
         Scene scene = ((Node) event.getSource()).getScene();
         Stage stage = (Stage) scene.getWindow();

@@ -388,6 +388,12 @@ public class BankDb {
         }
     }
 
+    /**
+     * Fetches the employee from the database with the given employeeId.
+     * @param employeeId the ID of the employee to fetch
+     * @return List of rows with employee info.
+     * @throws SQLException if database error occurs.
+     */
     public List<Map<String, Object>> employeeGetById(int employeeId) throws SQLException {
         try (Connection conn = DbManager.getConnection();
              CallableStatement stmt = conn.prepareCall("{CALL sp_employee_get_by_id(?)}")) {
@@ -403,6 +409,24 @@ public class BankDb {
         }
     }
 
+    /**
+     * Fetches the employee from the database with the given email.
+     * @param email the email of the employee to fetch
+     * @return List of rows with employee info.
+     * @throws SQLException if database error occurs.
+     */
+    public List<Map<String, Object>> employeeGetByEmail(String email) throws SQLException {
+        try (Connection conn = DbManager.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(
+                     "SELECT * FROM employee WHERE employee_email = ?")) {
+
+            stmt.setString(1, email);
+            try (ResultSet rs = stmt.executeQuery()) {
+                return ResultSetUtils.toList(rs);
+            }
+        }
+    }
+
     public List<Map<String, Object>> employeeListByBranch(int branchId) throws SQLException {
         try (Connection conn = DbManager.getConnection();
              CallableStatement stmt = conn.prepareCall("{CALL sp_employee_list_by_branch(?)}")) {
@@ -415,6 +439,26 @@ public class BankDb {
                 }
             }
             return Collections.emptyList();
+        }
+    }
+
+    /**
+     * Fetches all employees in the database no matter the branch.  
+     * @return List of rows with employee info. 
+     * @throws SQLException if database error occurs.
+     */
+    public List<Map<String, Object>> getAllEmployee() throws SQLException {
+        String sql = """
+            SELECT employee_id, employee_name, employee_email, employee_phone,
+                dob, employee_address, role, branch_id
+            FROM employee
+        """;
+
+        try (Connection conn = DbManager.getConnection();
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            ResultSet rs = stmt.executeQuery()) {
+
+            return ResultSetUtils.toList(rs);
         }
     }
 

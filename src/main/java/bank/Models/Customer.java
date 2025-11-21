@@ -1,6 +1,7 @@
 package bank.Models;
 
 import bank.DB.BankDb;
+import bank.Models.PasswordResettable;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -14,7 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-public class Customer {
+public class Customer implements PasswordResettable {
     private static final BankDb BANK_DB = new BankDb();
 
     int customerID;
@@ -163,6 +164,7 @@ public class Customer {
      * Get the security question
      * @return securityQuestion
      */
+    @Override
     public String getSecurityQuestion() {
         return securityQuestion;
     }
@@ -171,6 +173,7 @@ public class Customer {
      * Get the security answer
      * @return securityAnswer
      */
+    @Override
     public String getSecurityAnswer() {
         return securityAnswer;
     }
@@ -189,6 +192,7 @@ public class Customer {
      * Set the customer password
      * @param password to set
      */
+    @Override
     public void setPassword(String password) {
         if (password == null || password.isBlank()) {
             throw new IllegalArgumentException("Password cannot be empty.");

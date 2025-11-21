@@ -11,7 +11,7 @@ public class GuiMain extends Application {
     public void start(Stage stage) throws Exception {
 
         FXMLLoader loader = new FXMLLoader(
-                GuiMain.class.getResource("/bank/Views/CreateAccountForm.fxml")
+                GuiMain.class.getResource("/bank/Views/UpdatePasswordForm.fxml")
         );
 
         Scene scene = new Scene(loader.load(), 900, 700);

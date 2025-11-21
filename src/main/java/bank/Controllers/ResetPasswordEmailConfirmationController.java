@@ -1,6 +1,8 @@
 package bank.Controllers;
 
 import bank.Models.Customer;
+import bank.Models.Employee;
+import bank.Models.PasswordResettable;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.regex.Pattern;
@@ -12,7 +14,9 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+import javafx.scene.control.ToggleButton;
 import javafx.scene.control.TextField;
+import javafx.scene.control.ToggleGroup;
 import javafx.stage.Stage;
 
 public class ResetPasswordEmailConfirmationController {
@@ -23,6 +27,28 @@ public class ResetPasswordEmailConfirmationController {
     @FXML
     private TextField emailField;
 
+    @FXML
+    private ToggleGroup accountTypeToggle;
+
+    @FXML
+    private ToggleButton customerRadio;
+
+    @FXML
+    private ToggleButton employeeRadio;
+
+    @FXML
+    private void initialize() {
+        if (customerRadio != null) {
+            customerRadio.setUserData(AccountType.CUSTOMER);
+        }
+        if (employeeRadio != null) {
+            employeeRadio.setUserData(AccountType.EMPLOYEE);
+        }
+        if (accountTypeToggle != null && accountTypeToggle.getSelectedToggle() == null && customerRadio != null) {
+            customerRadio.setSelected(true);
+        }
+    }
+
     /**
      * Handles the "Continue" button action.
      * Validates the email and loads the security question view if valid.
@@ -32,20 +58,54 @@ public class ResetPasswordEmailConfirmationController {
     private void handleContinue(ActionEvent event) {
         String email = emailField.getText().trim();
 
-        Customer customer;
+        PasswordResettable account = lookupAccountByType(email);
+
+        if (account == null) {
+            return; // lookupAccountByType already surfaced errors
+        }
+
+        loadSecurityQuestion(event, account);
+    }
+
+    /**
+     * Looks up the account by email and type.
+     * @param email of the account that wants to reset password
+     * @return the PasswordResettable account, or null if not found
+     * PasswordResettable could be either Customer or Employee based on selection
+     * PasswordResettable is an interface implemented by both Customer and Employee for password reset functionality
+     */
+    private PasswordResettable lookupAccountByType(String email) {
+        if (accountTypeToggle == null || accountTypeToggle.getSelectedToggle() == null) {
+            showError("Please select Customer or Employee.");
+            return null;
+        }
+
+        Object selected = accountTypeToggle.getSelectedToggle().getUserData();
+        AccountType type;
+        if (selected instanceof AccountType at) {
+            type = at;
+        } else if (selected instanceof String s) {
+            type = AccountType.valueOf(s);
+        } else {
+            showError("Unknown account type selection.");
+            return null;
+        }
+
         try {
-            customer = Customer.fetchCustomerByEmail(email);
+            PasswordResettable account = switch (type) {
+                case CUSTOMER -> Customer.fetchCustomerByEmail(email);
+                case EMPLOYEE -> Employee.fetchEmployeeByEmail(email);
+            };
+
+            if (account == null || account.getEmail() == null) {
+                showError("The email address you entered does not exist in our records.");
+                return null;
+            }
+
+            return account;
         } catch (SQLException ex) {
-            // showError("Unable to look up that email right now. Please try again later.");
             throw new RuntimeException(ex);
         }
-
-        if (customer == null || customer.getEmail() == null) {
-            showError("The email address you entered does not exist in our records.");
-            return;
-        }
-
-        loadSecurityQuestion(event, customer);
     }
 
     /**
@@ -58,16 +118,15 @@ public class ResetPasswordEmailConfirmationController {
 
     /**
      * Loads the security question view for password reset.
-     * Passes the customer object to the next controller (ResetPasswordSecurityQuestionController).
+     * Passes the account object to the next controller (ResetPasswordSecurityQuestionController).
      *
      */
-    private void loadSecurityQuestion(ActionEvent event, Customer customer) {
+    private void loadSecurityQuestion(ActionEvent event, PasswordResettable account) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/bank/Views/ResetPasswordSecurityQuestion.fxml"));
             Parent root = loader.load();
             ResetPasswordSecurityQuestionController controller = loader.getController();
-            // controller.setEmailAddress(customer.getEmail());
-            controller.setCustomer(customer);
+            controller.setAccount(account);
 
             Scene scene = ((Node) event.getSource()).getScene();
             Stage stage = (Stage) scene.getWindow();
@@ -101,5 +160,10 @@ public class ResetPasswordEmailConfirmationController {
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
+    }
+
+    private enum AccountType {
+        CUSTOMER,
+        EMPLOYEE
     }
 }

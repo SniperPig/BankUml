@@ -1,0 +1,53 @@
+.account-toggle-wrapper {
+    -fx-background-color: #b3b0ff;
+    -fx-padding: 6 8;
+    -fx-background-radius: 32;
+    -fx-border-color: #8a87f0;
+    -fx-border-radius: 32;
+}
+
+.toggle-button.account-toggle {
+    -fx-background-color: transparent;
+    -fx-padding: 11 30;
+    -fx-font-size: 17px;
+    -fx-text-fill: #6c6b9c;
+    -fx-cursor: hand;
+    -fx-background-radius: 28;
+    -fx-border-color: transparent;
+}
+
+.toggle-button.account-toggle:selected {
+    -fx-background-color: white;
+    -fx-text-fill: #2f2f2f;
+    -fx-background-radius: 28;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.12), 6, 0.2, 0, 1);
+}
+
+.toggle-button.account-toggle:selected .text {
+    -fx-fill: #2f2f2f;
+}
+
+.toggle-button.account-toggle {
+    -fx-background-insets: 0;
+}
+
+.toggle-button.account-toggle:selected,
+.toggle-button.account-toggle:selected:hover,
+.toggle-button.account-toggle:selected:focused,
+.toggle-button.account-toggle:selected:armed {
+    -fx-background-color: white;
+    -fx-text-fill: #2f2f2f;
+    -fx-background-insets: 0;
+    -fx-padding: 11 30;
+}
+
+.toggle-button.account-toggle:hover:not(:selected) {
+    -fx-background-color: rgba(255, 255, 255, 0.6);
+    -fx-text-fill: #2f2f2f;
+    -fx-padding: 11 30;
+}
+
+.toggle-button.account-toggle:focused {
+    -fx-background-insets: 0;
+    -fx-background-color: inherit;
+}

@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-public class Employee {
+public class Employee implements PasswordResettable {
     private static final BankDb BANK_DB = new BankDb();
 
     int employeeID;
@@ -178,6 +178,16 @@ public class Employee {
         this.role = role;
     }
 
+    @Override
+    public String getSecurityQuestion() {
+        return securityQuestion;
+    }
+
+    @Override
+    public String getSecurityAnswer() {
+        return securityAnswer;
+    }
+
     /**
      * Get the password hash of the employee
      * @return passwordhash
@@ -241,10 +251,39 @@ public class Employee {
         }
     }
 
+    @Override
+    public void setPassword(String password) {
+        if (password == null || password.isBlank()) {
+            throw new IllegalArgumentException("Password cannot be empty.");
+        }
+        String oldPasswordHash = this.passwordhash;
+        this.passwordhash = hashPassword(password);
+
+        try {
+            BANK_DB.employeeChangePassword(this.employeeID, oldPasswordHash, this.passwordhash);
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to update employee password.", e);
+        }
+    }
+
     public static Employee fetchEmployeeByID(int employeeID) throws SQLException {
         List<Map<String, Object>> rows = BANK_DB.employeeGetById(employeeID);
 
         return rows.isEmpty() ? null : mapRowToEmployee(rows.get(0));
+    }
+
+    public static Employee fetchEmployeeByEmail(String email) throws SQLException {
+        List<Map<String, Object>> rows = BANK_DB.employeeGetByEmail(email);
+
+        return rows.isEmpty() ? null : mapRowToEmployee(rows.get(0));
+    }
+
+    public static List<Employee> fetchAllEmployees() throws SQLException {
+        List<Map<String, Object>> rows = BANK_DB.getAllEmployee();
+
+        return rows.stream()
+                   .map(Employee::mapRowToEmployee)
+                   .toList();
     }
 
     /*
