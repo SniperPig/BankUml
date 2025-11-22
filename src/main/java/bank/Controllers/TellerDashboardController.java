@@ -79,7 +79,7 @@ public class TellerDashboardController {
     @FXML
     private void initialize() throws SQLException{
         // This part will be changed to actual logged in employee later
-        Employee employee = SessionManager.getCurrentEmployee(); // ***** This need to be changed to like logged in employere ******
+        Employee employee = SessionManager.getCurrentEmployee(); 
         // Set welcome message with employee's first name
         welcomeLabel.setText("Welcome, " + employee.getName().split("\\s+")[0]);
 
