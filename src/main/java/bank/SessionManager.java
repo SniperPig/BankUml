@@ -2,8 +2,6 @@ package bank;
 
 import bank.Models.Customer;
 import bank.Models.Employee;
-import bank.Models.PasswordResettable;
-
 
 /**
  * Stores which user is currently logged-in for this session (either customer or employee).
@@ -41,15 +39,17 @@ public final class SessionManager {
     }
 
     /**
-     * Get the current active user. We use the PasswordResettable interface that is shared by
-     * both employees and customers.
+     * Get the current active employee
      */
-    public static PasswordResettable getCurrentUser() {
-        if (currentEmployee != null) {
-            return currentEmployee;
-        } else {
-            return currentCustomer;
-        }
+    public static Employee getCurrentEmployee() {
+        return currentEmployee;
+    }
+
+    /**
+     * Get the current active customer
+     */
+    public static Customer getCurrentCustomer() {
+        return currentCustomer;
     }
 
     /**

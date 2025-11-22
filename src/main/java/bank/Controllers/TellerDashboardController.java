@@ -7,6 +7,8 @@ import java.util.Locale;
 import bank.Models.Employee;
 import bank.Models.Customer;
 import java.util.List;
+import bank.SessionManager;
+
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -77,7 +79,7 @@ public class TellerDashboardController {
     @FXML
     private void initialize() throws SQLException{
         // This part will be changed to actual logged in employee later
-        Employee employee = Employee.fetchEmployeeByID(1); // ***** This need to be changed to like logged in employere ******
+        Employee employee = SessionManager.getCurrentEmployee(); // ***** This need to be changed to like logged in employere ******
         // Set welcome message with employee's first name
         welcomeLabel.setText("Welcome, " + employee.getName().split("\\s+")[0]);
 
@@ -223,6 +225,7 @@ public class TellerDashboardController {
      */ 
     @FXML
     private void handleLogout(ActionEvent event) {
+        SessionManager.clear();
         switchScene(event, "/bank/Views/LoginForm.fxml");
     }
 
