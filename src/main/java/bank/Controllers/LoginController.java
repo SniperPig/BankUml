@@ -16,6 +16,10 @@ import javafx.scene.control.Toggle;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.stage.Stage;
+import javafx.scene.control.Alert;
+import bank.Models.Employee;
+import bank.Models.Customer;
+import java.sql.SQLException;
 
 /**
  * This is the Controller associated with the LoginForm view.
@@ -30,6 +34,9 @@ public class LoginController {
     @FXML private ToggleGroup roleGroup;
     @FXML private Button loginButton;
     @FXML private Hyperlink forgotLink;
+
+    // How many attempts left a user has to log in
+    private int remainingAttempts = 3;
 
     /**
      * This function initializes the LoginForm by setting the default role to Customer
@@ -74,9 +81,119 @@ public class LoginController {
     }
 
     /**
-     * 
+     * This method attempts to fetch either a Customer or Employee (depending on which role
+     * is selected) from the database in order to validate credentials.
+     * If the credentials are valid, the user is sent to the appropriate dashboard.
      */
     private void handleLogin() {
+        // First retrieve the input email and password    
+        String username = usernameField.getText();
+        String password = passwordField.getText();
+
+        // This will be used for error messages
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setHeaderText(null);
+
+        // Make sure both fields are not empty
+        if (username == null || username.isBlank() || password == null || password.isBlank()) {
+            alert.setAlertType(Alert.AlertType.WARNING);
+            alert.setContentText("Please enter both username and password.");
+            alert.showAndWait();
+            return;
+        }
+
+        // Then check whether customer or employee is selected
+        boolean isEmployee = employeeToggle.isSelected();
+        
+        try {
+            // if it's an employee
+            if (isEmployee) {
+                Employee currentEmployee = Employee.fetchEmployeeByEmail(username);
+                
+                // if no employee retrieved
+                if (currentEmployee == null) {
+                    alert.setAlertType(Alert.AlertType.WARNING);
+                    alert.setContentText("Account not found. Please try a different username.");
+                    alert.showAndWait();
+                    return;
+                }
+                boolean validCredentials = currentEmployee.isPasswordValid(password);  
+
+                // if passwords don't match
+                if (!validCredentials) {
+                    remainingAttempts--;
+
+                    // If 3 attempts have already been made, block the user from trying to log in again
+                    if (remainingAttempts <= 0) {
+                        loginButton.setDisable(true);
+                        usernameField.setDisable(true);
+                        passwordField.setDisable(true);
+                        forgotLink.setDisable(true);
+                        alert.setAlertType(Alert.AlertType.ERROR);
+                        alert.setContentText("Too many attempts. Login locked for security.");
+                        alert.showAndWait();
+                        return;
+                    } 
+                    // otherwise, tell user how many attempts are left
+                    else {
+                        alert.setAlertType(Alert.AlertType.WARNING);
+                        alert.setContentText("Invalid password. You have " 
+                            + remainingAttempts + " attempt(s) left.\nPlease try again.");
+                        alert.showAndWait();
+                        return;
+                    }
+                } 
+
+                // if credentials are valid, then
+                // 1) reset # of remaining attempts
+                remainingAttempts = 3;
+
+                // 2) save the data in SessionManager 
+            } 
+            // if it's a customer, repeat process but with Customer object
+            else {
+                Customer currentCustomer = Customer.fetchCustomerByEmail(username);
+
+                if (currentCustomer == null) {
+                    alert.setAlertType(Alert.AlertType.WARNING);
+                    alert.setContentText("Account not found. Please try a different username.");
+                    alert.showAndWait();
+                    return;
+                }     
+                boolean validCredentials = currentCustomer.isPasswordValid(password);
+
+                // if passwords don't match
+                if (!validCredentials) {
+                    remainingAttempts--;
+
+                    // If 3 attempts have already been made, block the user from trying to log in again
+                    if (remainingAttempts <= 0) {
+                        loginButton.setDisable(true);
+                        usernameField.setDisable(true);
+                        passwordField.setDisable(true);
+                        forgotLink.setDisable(true);
+                        alert.setAlertType(Alert.AlertType.ERROR);
+                        alert.setContentText("Too many attempts. Login locked for security.");
+                        alert.showAndWait();
+                        return;
+                    } 
+                    // otherwise, tell user how many attempts are left
+                    else {
+                        alert.setAlertType(Alert.AlertType.WARNING);
+                        alert.setContentText("Invalid password. You have " 
+                            + remainingAttempts + " attempt(s) left.\nPlease try again.");
+                        alert.showAndWait();
+                        return;
+                    }
+                } 
+
+                remainingAttempts = 3;
+
+            }    
+        } catch (SQLException e) {
+            alert.setAlertType(Alert.AlertType.ERROR);
+            alert.setContentText("Database error: " + e.getMessage());
+        }
     }
 
     /**
