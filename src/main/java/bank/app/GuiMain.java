@@ -34,6 +34,7 @@ public class GuiMain extends Application {
 
         stage.setTitle("MyBankUML Login");
         stage.setScene(scene);
+        stage.setResizable(false);
         stage.show();
     }
 
