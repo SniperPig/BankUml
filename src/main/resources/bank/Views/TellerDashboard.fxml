@@ -72,7 +72,7 @@
                                    prefHeight="400.0"
                                    VBox.vgrow="ALWAYS">
                             <columns>
-                                <TableColumn fx:id="idColumn" text="ID" prefWidth="100.0"/>
+                                <TableColumn fx:id="idColumn" text="ID" prefWidth="50.0"/>
                                 <TableColumn fx:id="nameColumn" text="Name" prefWidth="150.0"/>
                                 <TableColumn fx:id="emailColumn" text="Email" prefWidth="200.0"/>
                                 <TableColumn fx:id="phoneColumn" text="Phone Number" prefWidth="150.0"/>

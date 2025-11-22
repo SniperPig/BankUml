@@ -19,6 +19,10 @@ public class Transaction {
     String performedByUserId;
     LocalDateTime createdAt; 
 
+    // This attribute is not added to the DB, it's purely for mathematical computations
+    // We will use it in Customer and Teller dashboards when viewing recent transactions
+    private transient double balanceAfter;
+
     /**
      * Constructor for Transaction 
      * @param transactionID the unique identifier for the transaction
@@ -149,6 +153,22 @@ public class Transaction {
      */
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    /**
+     * Get the balance after a transaction is done
+     * @return balanceAfter the balance after the transaction is done
+     */
+    public double getBalanceAfter() {
+        return balanceAfter;
+    }
+
+    /**
+     * Set the balance after a transaction is done
+     * @param balanceAfter the balance after a transaction is done
+     */
+    public void setBalanceAfter(double balanceAfter) {
+        this.balanceAfter = balanceAfter;
     }
 
     /**

@@ -30,35 +30,17 @@ public class TellerAccountViewController {
     private static final DateTimeFormatter DATE_FORMATTER =
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
-    @FXML
-    private Label accountHeading;
-
-    @FXML
-    private TableView<Account> accountsTable;
-
-    @FXML
-    private TableColumn<Account, String> accountTypeColumn;
-
-    @FXML
-    private TableColumn<Account, String> accountNumberColumn;
-
-    @FXML
-    private TableColumn<Account, String> accountBalanceColumn;
-
-    @FXML
-    private TableView<Transaction> transactionsTable;
-
-    @FXML
-    private TableColumn<Transaction, String> transactionDateColumn;
-
-    @FXML
-    private TableColumn<Transaction, String> transactionDescriptionColumn;
-
-    @FXML
-    private TableColumn<Transaction, String> transactionAmountColumn;
-
-    @FXML
-    private TableColumn<Transaction, String> transactionBalanceColumn;
+    @FXML private Label accountHeading;
+    @FXML private TableView<Account> accountsTable;
+    @FXML private TableColumn<Account, String> accountTypeColumn;
+    @FXML private TableColumn<Account, String> accountNumberColumn;
+    @FXML private TableColumn<Account, String> accountBalanceColumn;
+    @FXML private TableView<Transaction> transactionsTable;
+    @FXML private TableColumn<Transaction, String> transactionDateColumn;
+    @FXML private TableColumn<Transaction, String> transactionDescriptionColumn;
+    @FXML private TableColumn<Transaction, String> transactionAmountColumn;
+    @FXML private TableColumn<Transaction, String> transactionStatusColumn;
+    @FXML private TableColumn<Transaction, String> transactionBalanceColumn;
 
     private final ObservableList<Account> accounts = FXCollections.observableArrayList();
     private final ObservableList<Transaction> transactions = FXCollections.observableArrayList();
@@ -83,11 +65,16 @@ public class TellerAccountViewController {
                 new SimpleStringProperty(safeString(cell.getValue().getTransactionType())));
         transactionAmountColumn.setCellValueFactory(cell ->
                 new SimpleStringProperty(formatCurrency(cell.getValue().getAmount())));
-        transactionBalanceColumn.setCellValueFactory(cell ->
+        transactionStatusColumn.setCellValueFactory(cell ->
                 new SimpleStringProperty(safeString(cell.getValue().getStatus())));
+        transactionBalanceColumn.setCellValueFactory(cell ->
+                new SimpleStringProperty(formatCurrency(cell.getValue().getBalanceAfter())));
 
         accountsTable.setItems(accounts);
         transactionsTable.setItems(transactions);
+
+        accountsTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        transactionsTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
         accountsTable.getSelectionModel().selectedItemProperty().addListener((obs, oldAcc, newAcc) -> {
             if (newAcc != null) {
@@ -199,9 +186,49 @@ public class TellerAccountViewController {
      */
     private void loadTransactionsForAccount(Account account) {
         try {
-            List<Transaction> fetchedTransactions =
+            List<Transaction> associatedTransactions =
                     Transaction.fetchRecentTransactionsByAccount(account.getAccountId(), 15);
-            transactions.setAll(fetchedTransactions);
+
+            // We need to store the balance after each transaction was done
+            // We begin with the current balance, because that's the balance after the most recent transaction
+            double balanceAtTheTime = account.getBalance();
+
+            for (Transaction transaction : associatedTransactions) {
+                transaction.setBalanceAfter(balanceAtTheTime);
+
+                // If the transaction had failed, skip this iteration
+                if ("FAILED".equalsIgnoreCase(transaction.getStatus())) {
+                    continue;
+                }
+
+                // the amount used in the transaction
+                double amountOfTrans = transaction.getAmount();
+                String typeOfTrans = transaction.getTransactionType();
+
+                // Depending on the transaction type, do different operations
+                switch (typeOfTrans) {
+                    case "DEPOSIT":
+                        // For the next most recent transaction, remove the amount that we deposited
+                        balanceAtTheTime -= amountOfTrans;   
+                        break;
+
+                    case "WITHDRAWAL":
+                        // For the next most recent transaction, add the amount that we withdrew
+                        balanceAtTheTime += amountOfTrans;
+                        break;
+
+                    case "TRANSFER":
+                        // This is similar to a withdrawal; we removed money from account
+                        // So for next most recent transaction, add the money back
+                        balanceAtTheTime += amountOfTrans;   
+                        break;
+
+                    default:
+                        break;
+                }
+            }
+
+            transactions.setAll(associatedTransactions);
         } catch (SQLException e) {
             showError("Unable to load transactions.", e);
             transactions.clear();

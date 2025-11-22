@@ -35,6 +35,7 @@ public class CustomerDashboardController {
     @FXML private TableColumn<Transaction, String> transactionDateColumn;
     @FXML private TableColumn<Transaction, String> transactionDescriptionColumn;
     @FXML private TableColumn<Transaction, String> transactionAmountColumn;
+    @FXML private TableColumn<Transaction, String> transactionStatusColumn;
     @FXML private TableColumn<Transaction, String> transactionBalanceColumn;
 
     // Tables in FXML require an observable list, so we'll transfer the data to these ObservableLists
@@ -187,6 +188,7 @@ public class CustomerDashboardController {
     /**
      * This function retrieves the transactions associated with the selected account of the 
      * logged in user in order to display them.
+     * It performs math to determine what the balance was after each transaction.
      * 
      * @param account the selected account of the logged in user
      */
@@ -199,6 +201,45 @@ public class CustomerDashboardController {
             // We retrieve the first 15 transactions associated with the selected account
             List<Transaction> associatedTransactions =
                     Transaction.fetchRecentTransactionsByAccount(account.getAccountId(), 15);
+
+            // We need to store the balance after each transaction was done
+            // We begin with the current balance, because that's the balance after the most recent transaction
+            double balanceAtTheTime = account.getBalance();
+
+            for (Transaction transaction : associatedTransactions) {
+                transaction.setBalanceAfter(balanceAtTheTime);
+
+                // If the transaction had failed, skip this iteration
+                if ("FAILED".equalsIgnoreCase(transaction.getStatus())) {
+                    continue;
+                }
+
+                // the amount used in the transaction
+                double amountOfTrans = transaction.getAmount();
+                String typeOfTrans = transaction.getTransactionType();
+
+                // Depending on the transaction type, do different operations
+                switch (typeOfTrans) {
+                    case "DEPOSIT":
+                        // For the next most recent transaction, remove the amount that we deposited
+                        balanceAtTheTime -= amountOfTrans;   
+                        break;
+
+                    case "WITHDRAWAL":
+                        // For the next most recent transaction, add the amount that we withdrew
+                        balanceAtTheTime += amountOfTrans;
+                        break;
+
+                    case "TRANSFER":
+                        // This is similar to a withdrawal; we removed money from account
+                        // So for next most recent transaction, add the money back
+                        balanceAtTheTime += amountOfTrans;   
+                        break;
+
+                    default:
+                        break;
+                }
+            }
 
             // And then transfer the data to the ObservableList "transactions"
             transactions.setAll(associatedTransactions);
@@ -215,6 +256,7 @@ public class CustomerDashboardController {
      * show up as an empty string
      * 
      * @param value the value we are checking (to see if it's null)
+     * @return value a string that is either empty, or has a value
      */
     private String safeString(String value) {
         return value == null ? "" : value;
@@ -225,6 +267,7 @@ public class CustomerDashboardController {
      * currency.
      * 
      * @param amount the amount to be formatted
+     * @return amount the amount formatted for currency
      */
     private String formatCurrency(double amount) {
         return String.format("$%,.2f", amount);
@@ -235,13 +278,14 @@ public class CustomerDashboardController {
      * dates.
      * 
      * @param dateTime the date to be formatted
+     * @return dateTime the datetime formatted as a string
      */
     private String formatDate(LocalDateTime dateTime) {
         if (dateTime == null) {
             return "";
         }
 
-        return DateTimeFormatter.ofPattern("yyyy-MM-dd").format(dateTime);
+        return DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm").format(dateTime);
     }
 
     /**
@@ -269,6 +313,10 @@ public class CustomerDashboardController {
                 new SimpleStringProperty(safeString(cell.getValue().getTransactionType())));
         transactionAmountColumn.setCellValueFactory(cell ->
                 new SimpleStringProperty(formatCurrency(cell.getValue().getAmount())));
+        transactionStatusColumn.setCellValueFactory(cell ->
+                new SimpleStringProperty(safeString(cell.getValue().getStatus())));
+        transactionBalanceColumn.setCellValueFactory(cell ->
+                new SimpleStringProperty(formatCurrency(cell.getValue().getBalanceAfter())));
 
         // Since there aren't that many fields, we can force the horizontal width to remain the same
         // But it's still scrollable vertically

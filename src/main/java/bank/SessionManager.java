@@ -40,6 +40,8 @@ public final class SessionManager {
 
     /**
      * Get the current active employee
+     * 
+     * @return currentEmployee the current active employee
      */
     public static Employee getCurrentEmployee() {
         return currentEmployee;
@@ -47,6 +49,8 @@ public final class SessionManager {
 
     /**
      * Get the current active customer
+     * 
+     * @return currentCustomer the current active customer
      */
     public static Customer getCurrentCustomer() {
         return currentCustomer;

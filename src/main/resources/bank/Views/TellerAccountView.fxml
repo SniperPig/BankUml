@@ -67,10 +67,11 @@
                         <TableView fx:id="transactionsTable"
                                    prefHeight="220.0">
                             <columns>
-                                <TableColumn fx:id="transactionDateColumn" text="Date" prefWidth="160.0"/>
-                                <TableColumn fx:id="transactionDescriptionColumn" text="Description" prefWidth="300.0"/>
-                                <TableColumn fx:id="transactionAmountColumn" text="Amount" prefWidth="150.0"/>
-                                <TableColumn fx:id="transactionBalanceColumn" text="Balance" prefWidth="150.0"/>
+                                <TableColumn fx:id="transactionDateColumn" text="Date" prefWidth="140.0"/>
+                                <TableColumn fx:id="transactionDescriptionColumn" text="Description" prefWidth="100.0"/>
+                                <TableColumn fx:id="transactionAmountColumn" text="Amount" prefWidth="140.0"/>
+                                <TableColumn fx:id="transactionStatusColumn" text="Status" prefWidth="140.0"/>
+                                <TableColumn fx:id="transactionBalanceColumn" text="Balance After Transaction" prefWidth="160.0"/>
                             </columns>
                         </TableView>
                     </children>
