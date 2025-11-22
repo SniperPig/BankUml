@@ -33,38 +33,17 @@ public class TellerDashboardController {
             "ID", "Name", "Email", "Phone Number", "Date of Birth", "Government ID", "Address"
     };
 
-    @FXML
-    private Label welcomeLabel;
-
-    @FXML
-    private TextField searchField;
-
-    @FXML
-    private ComboBox<String> searchCategoryBox;
-
-    @FXML
-    private TableView<Customer> customerTable;
-
-    @FXML
-    private TableColumn<Customer, String> idColumn;
-
-    @FXML
-    private TableColumn<Customer, String> nameColumn;
-
-    @FXML
-    private TableColumn<Customer, String> emailColumn;
-
-    @FXML
-    private TableColumn<Customer, String> phoneColumn;
-
-    @FXML
-    private TableColumn<Customer, String> dobColumn;
-
-    @FXML
-    private TableColumn<Customer, String> govIdColumn;
-
-    @FXML
-    private TableColumn<Customer, String> addressColumn;
+    @FXML private Label welcomeLabel;
+    @FXML private TextField searchField;
+    @FXML private ComboBox<String> searchCategoryBox;
+    @FXML private TableView<Customer> customerTable;
+    @FXML private TableColumn<Customer, String> idColumn;
+    @FXML private TableColumn<Customer, String> nameColumn;
+    @FXML private TableColumn<Customer, String> emailColumn;
+    @FXML private TableColumn<Customer, String> phoneColumn;
+    @FXML private TableColumn<Customer, String> dobColumn;
+    @FXML private TableColumn<Customer, String> govIdColumn;
+    @FXML private TableColumn<Customer, String> addressColumn;
 
     private final ObservableList<Customer> masterData = FXCollections.observableArrayList();
     private final FilteredList<Customer> filteredData = new FilteredList<>(masterData, record -> true);
