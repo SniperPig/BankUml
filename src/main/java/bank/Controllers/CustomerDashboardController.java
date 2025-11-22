@@ -19,17 +19,13 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.stage.Stage;
+import javafx.scene.control.Alert;
 
 public class CustomerDashboardController {
-
-    private static final DateTimeFormatter DATE_FORMATTER =
-            DateTimeFormatter.ofPattern("yyyy-MM-dd");
-
     @FXML private Label welcomeLabel;
     @FXML private TableView<Account> accountsTable;
     @FXML private TableColumn<Account, String> accountTypeColumn;
@@ -41,21 +37,40 @@ public class CustomerDashboardController {
     @FXML private TableColumn<Transaction, String> transactionAmountColumn;
     @FXML private TableColumn<Transaction, String> transactionBalanceColumn;
 
+    // Tables in FXML require an observable list, so we'll transfer the data to these ObservableLists
     private final ObservableList<Account> accounts = FXCollections.observableArrayList();
     private final ObservableList<Transaction> transactions = FXCollections.observableArrayList();
 
     @FXML
     /**
      * This function initializes the CustomerDashboard using the current active Customer.
-     * It gives the user a simple greeting.
+     * It gives the user a simple greeting, and configures the two tables for the user.
      */
     private void initialize() {
         Customer customer = SessionManager.getCurrentCustomer();
         welcomeLabel.setText("Welcome, " + customer.getName().split("\\s+")[0]);
+
+        // configure the tables
+        configureTables();
+
+        // fill the tables from JavaFX
+        loadAccountsForCustomer();
+        accountsTable.setItems(accounts);
+        transactionsTable.setItems(transactions);
+
+        // and lastly, update the transactions table if the customer selects a different account
+        accountsTable.getSelectionModel().selectedItemProperty().addListener((obs, oldAcc, newAcc) -> {
+            if (newAcc != null) {
+                loadTransactionsForAccount(newAcc);
+            } else {
+                // If the row is empty, there should be no tarnsactions visible
+                transactions.clear();
+            }
+        });
     }
 
     /**
-     * This function allows the GUI to switch scenes
+     * This function allows the GUI to switch scenes.
      * 
      * @param event the event that is created by clicking a button
      * @param resourcePath the path of the new scene we want to reach
@@ -76,8 +91,8 @@ public class CustomerDashboardController {
 
     @FXML
     /**
-     * This function is invoked when the customer clicks "Update Password"
-     * It navigates the user to the update password process
+     * This function is invoked when the customer clicks "Update Password".
+     * It navigates the user to the update password process.
      * 
      * @param event the event created by clicking "Update Password" hyperlink
      */
@@ -87,8 +102,8 @@ public class CustomerDashboardController {
 
     @FXML
     /** 
-     * This function is invoked when the customer presses the "Withdraw" button
-     * It navigates the user to the Withdraw page
+     * This function is invoked when the customer presses the "Withdraw" button.
+     * It navigates the user to the Withdraw page.
      * 
      * @param event the event created by clicking "Withdraw" button
      */
@@ -98,8 +113,8 @@ public class CustomerDashboardController {
 
     @FXML
     /** 
-     * This function is invoked when the customer presses the "Deposit" button
-     * It navigates the user to the Deposit page
+     * This function is invoked when the customer presses the "Deposit" button.
+     * It navigates the user to the Deposit page.
      * 
      * @param event the event created by clicking "Deposit" button
      */
@@ -109,176 +124,155 @@ public class CustomerDashboardController {
 
     @FXML
     /** 
-     * This function is invoked when the customer presses the "Transfer" button
-     * It navigates the user to the Transfer page
+     * This function is invoked when the customer presses the "Transfer" button.
+     * It navigates the user to the Transfer page.
      * 
-     * @param event the event created by clicking "Transfers" button
+     * @param event the event created by clicking "Transfer" button
      */
     private void handleTransfer(ActionEvent event) {
         switchScene(event, "/bank/Views/TransferForm.fxml");
     }
 
     @FXML
+    /** 
+     * This function is invoked when the customer presses the "Logout" hyperlink.
+     * It navigates the user back to the Login page.
+     * 
+     * @param event the event created by clicking "Logout" hyperlink
+     */
     private void handleLogout(ActionEvent event) {
+        SessionManager.clear();
+        switchScene(event, "/bank/Views/LoginForm.fxml");
+    }
 
+    /*
+     * This function retrieves the accounts associated with the logged in user in order
+     * to display them.
+     */
+    private void loadAccountsForCustomer() {
+        // This will be used for error messages
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setHeaderText(null);
+
+        try {
+            // First retrieve the customerID 
+            Customer customer = SessionManager.getCurrentCustomer();
+            int customerID = customer.getCustomerID();
+
+            // Then fetch the associated accounts with that customer
+            List<Account> associatedAccounts = Account.fetchAccountsByCustomer(customerID);
+            // And transfer them to the ObservableList
+            accounts.setAll(associatedAccounts);
+
+            if (!associatedAccounts.isEmpty()) {
+                // Retrieve the first account in the list to set it as default in the selection
+                Account first = associatedAccounts.get(0);
+                accountsTable.getSelectionModel().select(first);
+
+                // And lastly, load the transactions for that selected account
+                loadTransactionsForAccount(first);
+            } else {
+                // If no account selected
+                transactions.clear();
+            }
+        } catch (SQLException e) {  
+            alert.setAlertType(Alert.AlertType.ERROR);
+            alert.setContentText("Database error: " + e.getMessage());
+            alert.showAndWait();
+            accounts.clear();
+            transactions.clear();
+        }
+    }
+
+    /**
+     * This function retrieves the transactions associated with the selected account of the 
+     * logged in user in order to display them.
+     * 
+     * @param account the selected account of the logged in user
+     */
+    private void loadTransactionsForAccount(Account account) {
+        // This will be used for error messages
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setHeaderText(null);
+
+        try {
+            // We retrieve the first 15 transactions associated with the selected account
+            List<Transaction> associatedTransactions =
+                    Transaction.fetchRecentTransactionsByAccount(account.getAccountId(), 15);
+
+            // And then transfer the data to the ObservableList "transactions"
+            transactions.setAll(associatedTransactions);
+        } catch (SQLException e) {
+            alert.setAlertType(Alert.AlertType.ERROR);
+            alert.setContentText("Database error: " + e.getMessage());
+            alert.showAndWait();
+            transactions.clear();
+        }
+    }
+
+    /**
+     * This function will be used in the table configuration to ensure that if any fields are null, they
+     * show up as an empty string
+     * 
+     * @param value the value we are checking (to see if it's null)
+     */
+    private String safeString(String value) {
+        return value == null ? "" : value;
+    }
+
+    /**
+     * This function will be used in the table configuration to format
+     * currency.
+     * 
+     * @param amount the amount to be formatted
+     */
+    private String formatCurrency(double amount) {
+        return String.format("$%,.2f", amount);
+    }
+
+    /**
+     * This function will be used in the table configuration to format
+     * dates.
+     * 
+     * @param dateTime the date to be formatted
+     */
+    private String formatDate(LocalDateTime dateTime) {
+        if (dateTime == null) {
+            return "";
+        }
+
+        return DateTimeFormatter.ofPattern("yyyy-MM-dd").format(dateTime);
+    }
+
+    /**
+     * This function is used to actually set up the tables and fill them with the relevant information.
+     * We have two tables: one for Accounts, and one for Transactions of the selected account.
+     */
+    private void configureTables() {
+        // Note that for each column, the process is similar
+        //      1) convert the value to SimpleStringProperty (because that's what JavaFX requires)
+        //      2) when applicable, applies either the safeString, formatCurrency, or formatDate function 
+        //          on the value 
+
+        // First taking care of the account table 
+        accountTypeColumn.setCellValueFactory(cell ->
+                new SimpleStringProperty(safeString(cell.getValue().getAccountType())));
+        accountNumberColumn.setCellValueFactory(cell ->
+                new SimpleStringProperty(safeString(cell.getValue().getAccountNumber())));
+        accountBalanceColumn.setCellValueFactory(cell ->
+                new SimpleStringProperty(formatCurrency(cell.getValue().getBalance())));
+
+        // And now repeating the process for the transaction table
+        transactionDateColumn.setCellValueFactory(cell ->
+                new SimpleStringProperty(formatDate(cell.getValue().getCreatedAt())));
+        transactionDescriptionColumn.setCellValueFactory(cell ->
+                new SimpleStringProperty(safeString(cell.getValue().getTransactionType())));
+        transactionAmountColumn.setCellValueFactory(cell ->
+                new SimpleStringProperty(formatCurrency(cell.getValue().getAmount())));
+
+        // Since there aren't that many fields, we can force the horizontal width to remain the same
+        // But it's still scrollable vertically
+        accountsTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        transactionsTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
     }
 }
-
-
-
-
-
-
-
-    // @FXML
-    // private void initialize() {
-    //     configureTables();
-
-    //     accountsTable.setItems(accounts);
-    //     transactionsTable.setItems(transactions);
-
-    //     accountsTable.getSelectionModel().selectedItemProperty().addListener((obs, oldAcc, newAcc) -> {
-    //         if (newAcc != null) {
-    //             loadTransactionsForAccount(newAcc);
-    //         } else {
-    //             transactions.clear();
-    //         }
-    //     });
-
-    //     currentCustomer = SessionManager.getCurrentCustomer();
-    //     if (currentCustomer != null) {
-    //         setWelcomeMessage(currentCustomer);
-    //         loadAccountsForCustomer(currentCustomer.getCustomerID());
-    //     } else {
-    //         welcomeLabel.setText("Welcome");
-    //     }
-    // }
-
-    // private void configureTables() {
-    //     accountTypeColumn.setCellValueFactory(cell ->
-    //             new SimpleStringProperty(safeString(cell.getValue().getAccountType())));
-    //     accountNumberColumn.setCellValueFactory(cell ->
-    //             new SimpleStringProperty(safeString(cell.getValue().getAccountNumber())));
-    //     accountBalanceColumn.setCellValueFactory(cell ->
-    //             new SimpleStringProperty(formatCurrency(cell.getValue().getBalance())));
-
-    //     transactionDateColumn.setCellValueFactory(cell ->
-    //             new SimpleStringProperty(formatDate(cell.getValue().getCreatedAt())));
-    //     transactionDescriptionColumn.setCellValueFactory(cell ->
-    //             new SimpleStringProperty(safeString(cell.getValue().getTransactionType())));
-    //     transactionAmountColumn.setCellValueFactory(cell ->
-    //             new SimpleStringProperty(formatCurrency(cell.getValue().getAmount())));
-    //     transactionBalanceColumn.setCellValueFactory(cell -> {
-    //         Account account = cell.getValue().getAccount();
-    //         if (account == null) {
-    //             return new SimpleStringProperty("");
-    //         }
-    //         return new SimpleStringProperty(formatCurrency(account.getBalance()));
-    //     });
-
-    //     accountsTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
-    //     transactionsTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
-    // }
-
-    // private void setWelcomeMessage(Customer customer) {
-    //     String name = safeString(customer.getName());
-    //     String firstName = name.isBlank() ? "Customer" : name.split("\\s+")[0];
-    //     welcomeLabel.setText("Welcome, " + firstName);
-    // }
-
-    // private void loadAccountsForCustomer(int customerId) {
-    //     try {
-    //         List<Account> fetchedAccounts = Account.fetchAccountsByCustomer(customerId);
-    //         accounts.setAll(fetchedAccounts);
-    //         if (!fetchedAccounts.isEmpty()) {
-    //             Account first = fetchedAccounts.get(0);
-    //             accountsTable.getSelectionModel().select(first);
-    //             loadTransactionsForAccount(first);
-    //         } else {
-    //             transactions.clear();
-    //         }
-    //     } catch (SQLException e) {
-    //         showError("Unable to load accounts.", e);
-    //         accounts.clear();
-    //         transactions.clear();
-    //     }
-    // }
-
-    // private void loadTransactionsForAccount(Account account) {
-    //     try {
-    //         List<Transaction> fetchedTransactions =
-    //                 Transaction.fetchRecentTransactionsByAccount(account.getAccountId(), 15);
-    //         transactions.setAll(fetchedTransactions);
-    //     } catch (SQLException e) {
-    //         showError("Unable to load transactions.", e);
-    //         transactions.clear();
-    //     }
-    // }
-
-    // @FXML
-    // private void handleWithdraw() {
-    //     showActionAlert("Withdraw");
-    // }
-
-    // @FXML
-    // private void handleDeposit() {
-    //     showActionAlert("Deposit");
-    // }
-
-    // @FXML
-    // private void handleTransfer() {
-    //     showActionAlert("Transfer");
-    // }
-
-    // @FXML
-    // private void handleUpdatePassword(ActionEvent event) {
-    //     switchScene(event, "/bank/Views/UpdatePasswordSecurityQuestion.fxml");
-    // }
-
-    // @FXML
-    // private void handleLogout(ActionEvent event) {
-    //     SessionManager.clear();
-    //     switchScene(event, "/bank/Views/LoginForm.fxml");
-    // }
-
-    // private void showActionAlert(String action) {
-    //     Alert alert = new Alert(Alert.AlertType.INFORMATION);
-    //     alert.setHeaderText(null);
-    //     String target = currentCustomer == null ? "your account" : currentCustomer.getName();
-    //     alert.setContentText(action + " flow not implemented yet for " + target + ".");
-    //     alert.showAndWait();
-    // }
-
-    // private void switchScene(ActionEvent event, String resourcePath) {
-    //     try {
-    //         Parent root = FXMLLoader.load(getClass().getResource(resourcePath));
-    //         Scene scene = ((Node) event.getSource()).getScene();
-    //         Stage stage = (Stage) scene.getWindow();
-    //         scene.setRoot(root);
-    //         stage.sizeToScene();
-    //     } catch (IOException ex) {
-    //         throw new RuntimeException("Unable to load " + resourcePath, ex);
-    //     }
-    // }
-
-    // private String formatCurrency(double amount) {
-    //     return String.format("$%,.2f", amount);
-    // }
-
-    // private String formatDate(LocalDateTime dateTime) {
-    //     if (dateTime == null) {
-    //         return "";
-    //     }
-    //     return DATE_FORMATTER.format(dateTime);
-    // }
-
-    // private String safeString(String value) {
-    //     return value == null ? "" : value;
-    // }
-
-    // private void showError(String message, Exception e) {
-    //     Alert alert = new Alert(Alert.AlertType.ERROR);
-    //     alert.setHeaderText(message);
-    //     alert.setContentText(e.getMessage());
-    //     alert.showAndWait();
-    // }

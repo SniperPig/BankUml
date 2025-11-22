@@ -201,6 +201,7 @@ public class LoginController {
         } catch (SQLException e) {
             alert.setAlertType(Alert.AlertType.ERROR);
             alert.setContentText("Database error: " + e.getMessage());
+            alert.showAndWait();
         }
     }
 

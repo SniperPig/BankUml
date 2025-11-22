@@ -8,6 +8,8 @@ import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import bank.SessionManager;
+
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -121,7 +123,7 @@ public class TellerAccountViewController {
      */
     @FXML
     private void handleWithdraw() {
-        showActionAlert("Withdraw");
+        switchScene(event, "/bank/Views/WithdrawForm.fxml");
     }
 
     /**
@@ -129,7 +131,7 @@ public class TellerAccountViewController {
      */
     @FXML
     private void handleDeposit() {
-        showActionAlert("Deposit");
+        switchScene(event, "/bank/Views/DepositForm.fxml");
     }
 
     /**
@@ -137,7 +139,7 @@ public class TellerAccountViewController {
      */
     @FXML
     private void handleTransfer() {
-        showActionAlert("Transfer");
+        switchScene(event, "/bank/Views/TransferForm.fxml");
     }
 
     /**
@@ -146,19 +148,10 @@ public class TellerAccountViewController {
      */
     @FXML
     private void handleLogout(ActionEvent event) {
+        SessionManager.clear();
         switchScene(event, "/bank/Views/LoginForm.fxml");
     }
-
-    // Show alert for unimplemented actions for now
-    // Later to be replaced with actual implementations
-    private void showActionAlert(String action) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setHeaderText(null);
-        String target = currentCustomer == null ? "customer" : currentCustomer.getName();
-        alert.setContentText(action + " flow not implemented yet for " + target + ".");
-        alert.showAndWait();
-    }
-
+    
     // Switches the scene to the specified FXML resource
     private void switchScene(ActionEvent event, String resourcePath) {
         try {
