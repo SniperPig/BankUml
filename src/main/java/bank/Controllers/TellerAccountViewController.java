@@ -120,25 +120,31 @@ public class TellerAccountViewController {
 
     /**
      * Handles the withdraw action
+     * 
+     * @param event the action event triggered by the withdraw button
      */
     @FXML
-    private void handleWithdraw() {
+    private void handleWithdraw(ActionEvent event) {
         switchScene(event, "/bank/Views/WithdrawForm.fxml");
     }
 
     /**
      * Handles the deposit action
+     * 
+     * @param event the action event triggered by the deposit button
      */
     @FXML
-    private void handleDeposit() {
+    private void handleDeposit(ActionEvent event) {
         switchScene(event, "/bank/Views/DepositForm.fxml");
     }
 
     /**
      * Handles the transfer action
+     * 
+     * @param event the action event triggered by the transfer button
      */
     @FXML
-    private void handleTransfer() {
+    private void handleTransfer(ActionEvent event) {
         switchScene(event, "/bank/Views/TransferForm.fxml");
     }
 
