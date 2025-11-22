@@ -1,6 +1,10 @@
 package bank.Controllers;
 
 import java.io.IOException;
+import bank.SessionManager;
+import bank.Models.Employee;
+import bank.Models.Customer;
+import java.sql.SQLException;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -17,9 +21,6 @@ import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.stage.Stage;
 import javafx.scene.control.Alert;
-import bank.Models.Employee;
-import bank.Models.Customer;
-import java.sql.SQLException;
 
 /**
  * This is the Controller associated with the LoginForm view.
@@ -51,7 +52,7 @@ public class LoginController {
 
         // If the login button is pressed, use the handleLogin function
         if (loginButton != null) {
-            loginButton.setOnAction(e -> handleLogin());
+            loginButton.setOnAction(this::handleLogin);
         }
 
         // If the forgotLink is pressed, use the handleForgotPassword() function
@@ -84,8 +85,10 @@ public class LoginController {
      * This method attempts to fetch either a Customer or Employee (depending on which role
      * is selected) from the database in order to validate credentials.
      * If the credentials are valid, the user is sent to the appropriate dashboard.
+     * 
+     * @param event the event created from the user pressing the "Login" button
      */
-    private void handleLogin() {
+    private void handleLogin(ActionEvent event) {
         // First retrieve the input email and password    
         String username = usernameField.getText();
         String password = passwordField.getText();
@@ -149,6 +152,10 @@ public class LoginController {
                 remainingAttempts = 3;
 
                 // 2) save the data in SessionManager 
+                SessionManager.setCurrentEmployee(currentEmployee);
+
+                // 3) Go to the appropriate dashboard (teller dashboard in this case)
+                switchScene(event, "/bank/Views/TellerDashboard.fxml");
             } 
             // if it's a customer, repeat process but with Customer object
             else {
@@ -188,7 +195,8 @@ public class LoginController {
                 } 
 
                 remainingAttempts = 3;
-
+                SessionManager.setCurrentCustomer(currentCustomer);
+                // switchScene(event, "/bank/Views/CustomerDashboard.fxml");
             }    
         } catch (SQLException e) {
             alert.setAlertType(Alert.AlertType.ERROR);
