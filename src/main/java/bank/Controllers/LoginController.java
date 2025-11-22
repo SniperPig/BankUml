@@ -154,8 +154,14 @@ public class LoginController {
                 // 2) save the data in SessionManager 
                 SessionManager.setCurrentEmployee(currentEmployee);
 
-                // 3) Go to the appropriate dashboard (teller dashboard in this case)
-                switchScene(event, "/bank/Views/TellerDashboard.fxml");
+                // 3) Go to the appropriate dashboard (teller or administrator dashboard in this case)
+                if (currentEmployee.getRole().equalsIgnoreCase("ADMIN")) {
+                    // If it's an administrator
+                    switchScene(event, "/bank/Views/AdminDashboard.fxml");
+                } else {
+                    // If it's a teller
+                    switchScene(event, "/bank/Views/TellerDashboard.fxml");
+                }
             } 
             // if it's a customer, repeat process but with Customer object
             else {

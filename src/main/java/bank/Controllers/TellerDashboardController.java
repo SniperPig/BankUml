@@ -200,7 +200,7 @@ public class TellerDashboardController {
 
     /**
      * Handles the logout action and switches back to the login form
-     * @param event
+     * @param event the event created when a user clicks "logout" hyperlink
      */ 
     @FXML
     private void handleLogout(ActionEvent event) {
