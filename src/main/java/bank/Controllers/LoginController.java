@@ -196,9 +196,7 @@ public class LoginController {
 
                 remainingAttempts = 3;
                 SessionManager.setCurrentCustomer(currentCustomer);
-
-                //*****************************FIX THIS */
-                // switchScene(event, "/bank/Views/CustomerDashboard.fxml");
+                switchScene(event, "/bank/Views/CustomerDashboard.fxml");
             }    
         } catch (SQLException e) {
             alert.setAlertType(Alert.AlertType.ERROR);
