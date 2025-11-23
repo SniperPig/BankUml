@@ -1,32 +1,30 @@
 package bank.Models;
 
-import bank.DB.BankDb;
-
-import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.util.*;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public abstract class Account {
-    private static final BankDb BANK_DB = new BankDb();
 
-    protected final int accountId;
-    protected final int customerId;
-    protected final int branchId;
+    protected int accountId;
+    protected int customerId;
+    protected int branchId;
 
-    protected final String accountNumber;
-    protected final String accountType;
+    protected String accountNumber;
+    protected String accountType;
 
     protected double balance;
-    protected final double interestRate;
+    protected double interestRate;
 
-    protected final String chequebookNumber;
-    protected final String bankCode;
+    protected String chequebookNumber; 
+    protected String bankCode;
+    protected LocalDateTime createdAt;
 
-    protected final LocalDateTime createdAt;
+    
+    protected List<Transaction> transactions = new ArrayList<>();
 
-    protected final List<Transaction> transactions;
+
 
     public Account(int accountId,
                    int customerId,
@@ -49,87 +47,43 @@ public abstract class Account {
         this.chequebookNumber = chequebookNumber;
         this.bankCode = bankCode;
         this.createdAt = createdAt;
-
-        this.transactions = new CopyOnWriteArrayList<>();
     }
+
 
 
     public int getAccountId() { return accountId; }
     public int getCustomerId() { return customerId; }
     public int getBranchId() { return branchId; }
+
     public String getAccountNumber() { return accountNumber; }
     public String getAccountType() { return accountType; }
+
     public double getBalance() { return balance; }
+    public void setBalance(double balance) { this.balance = balance; }
+
     public double getInterestRate() { return interestRate; }
+    public void setInterestRate(double interestRate) { this.interestRate = interestRate; }
+
     public String getChequebookNumber() { return chequebookNumber; }
+    public void setChequebookNumber(String chequebookNumber) { this.chequebookNumber = chequebookNumber; }
+
     public String getBankCode() { return bankCode; }
     public LocalDateTime getCreatedAt() { return createdAt; }
-    public List<Transaction> getTransactions() { return Collections.unmodifiableList(transactions); }
 
-    public void deposit(double amount, String performedByUserId) {
-        if (amount <= 0) throw new IllegalArgumentException("Deposit amount must be positive.");
-        this.balance += amount;
+    public List<Transaction> getTransactions() { return transactions; }
 
-        Transaction t = new Transaction(
-                0, this, amount, "DEPOSIT", "SUCCESS", performedByUserId, LocalDateTime.now()
-        );
-        this.transactions.add(t);
-    }
-
-    public void withdraw(double amount, String performedByUserId) {
-        if (amount <= 0) throw new IllegalArgumentException("Withdrawal amount must be positive.");
-
-        if (!canWithdraw(amount)) {
-            Transaction t = new Transaction(
-                    0, this, -amount, "WITHDRAWAL", "FAILED", performedByUserId, LocalDateTime.now()
-            );
-            this.transactions.add(t);
-            throw new IllegalArgumentException("Insufficient funds or account constraints.");
-        }
-
-        this.balance -= amount;
-        Transaction t = new Transaction(
-                0, this, -amount, "WITHDRAWAL", "SUCCESS", performedByUserId, LocalDateTime.now()
-        );
-        this.transactions.add(t);
-    }
-
-    public void transfer(Account destination, double amount, String performedByUserId) {
-        if (destination == null) throw new IllegalArgumentException("Destination account cannot be null.");
-        if (amount <= 0) throw new IllegalArgumentException("Transfer amount must be positive.");
-
-        try {
-            this.withdraw(amount, performedByUserId); // may throw if insufficient funds
-            destination.deposit(amount, performedByUserId);
-
-            Transaction t = new Transaction(
-                    0, this, -amount, "TRANSFER", "SUCCESS", performedByUserId, LocalDateTime.now()
-            );
-            this.transactions.add(t);
-        } catch (IllegalArgumentException e) {
-            Transaction t = new Transaction(
-                    0, this, -amount, "TRANSFER", "FAILED", performedByUserId, LocalDateTime.now()
-            );
-            this.transactions.add(t);
-            throw e;
+    public void addTransaction(Transaction transaction) {
+        if (transaction != null) {
+            transactions.add(transaction);
         }
     }
 
 
-    protected abstract boolean canWithdraw(double amount);
 
     public abstract void pay();
     public abstract void receipt();
 
-    public static List<Account> fetchAccountsByCustomer(int customerId) throws SQLException {
-        List<Map<String, Object>> rows = BANK_DB.accountListByCustomer(customerId);
-        List<Account> accounts = new ArrayList<>();
-        for (Map<String, Object> row : rows) {
-            Account account = mapRowToAccount(row);
-            if (account != null) accounts.add(account);
-        }
-        return accounts;
-    }
+
 
     public static Account mapRowToAccount(Map<String, Object> row) {
         if (row == null) return null;
@@ -137,92 +91,54 @@ public abstract class Account {
         int accountId = toInt(row.get("account_id"));
         int customerId = toInt(row.get("customer_id"));
         int branchId = toInt(row.get("branch_id"));
-        String accountNumber = Objects.toString(row.get("account_number"), null);
-        String accountType = Objects.toString(row.get("account_type"), "").toUpperCase(Locale.ROOT);
+
+        String accountNumber = str(row.get("account_number"));
+        String accountType = str(row.get("account_type"));
+        String bankCode = str(row.get("bank_code"));
+        String chequebookNumber = str(row.get("chequebook_number"));
+
         double balance = toDouble(row.get("balance"));
-        Double interestRate = toNullableDouble(row.get("interest_rate"));
-        String chequebookNumber = Objects.toString(row.get("chequebook_number"), null);
-        String bankCode = Objects.toString(row.get("bank_code"), null);
-        LocalDateTime createdAt = toLocalDateTime(row.get("created_at"));
+        double interestRate = toDouble(row.get("interest_rate"));
 
-        return switch (accountType) {
-            case "SAVING" -> new SavingAccount(
-                    accountId,
-                    customerId,
-                    branchId,
-                    accountNumber,
-                    balance,
-                    interestRate != null ? interestRate : 0.0,
-                    bankCode,
-                    createdAt,
-                    0.0
-            );
-            case "CHECKING" -> new CheckingAccount(
-                    accountId,
-                    customerId,
-                    branchId,
-                    accountNumber,
-                    balance,
-                    chequebookNumber,
-                    bankCode,
-                    createdAt,
-                    0.0
-            );
-            default -> throw new IllegalArgumentException("Unknown account type: " + accountType);
-        };
+        LocalDateTime createdAt = toDate(row.get("created_at"));
+
+    
+        if ("CHECKING".equalsIgnoreCase(accountType)) {
+            double overdraftLimit = toDouble(row.get("overdraft_limit"));
+            return new CheckingAccount(accountId, customerId, branchId, accountNumber,
+                    balance, chequebookNumber, bankCode, createdAt, overdraftLimit);
+        }
+
+        if ("SAVING".equalsIgnoreCase(accountType)) {
+            double minBalance = toDouble(row.get("minimum_balance"));
+            return new SavingAccount(accountId, customerId, branchId, accountNumber,
+                    balance, interestRate, bankCode, createdAt, minBalance);
+        }
+
+        return null;
     }
 
-    private static int toInt(Object value) {
-        if (value instanceof Number number) return number.intValue();
-        if (value == null) return 0;
-        return Integer.parseInt(value.toString());
+
+
+    private static int toInt(Object v) {
+        if (v instanceof Number n) return n.intValue();
+        return v == null ? 0 : Integer.parseInt(v.toString());
     }
 
-    private static double toDouble(Object value) {
-        if (value instanceof Number number) return number.doubleValue();
-        if (value == null || (value instanceof String str && str.isEmpty())) return 0.0;
-        return Double.parseDouble(value.toString());
+    private static double toDouble(Object v) {
+        if (v instanceof Number n) return n.doubleValue();
+        return v == null ? 0.0 : Double.parseDouble(v.toString());
     }
 
-    private static Double toNullableDouble(Object value) {
-        if (value == null) return null;
-        if (value instanceof Number number) return number.doubleValue();
-        if (value instanceof String str && str.isBlank()) return null;
-        return Double.parseDouble(value.toString());
+    private static String str(Object v) {
+        return v == null ? null : v.toString();
     }
 
-    private static LocalDateTime toLocalDateTime(Object value) {
-        if (value == null) return null;
-        if (value instanceof LocalDateTime localDateTime) return localDateTime;
-        if (value instanceof Timestamp ts) return ts.toLocalDateTime();
-        return LocalDateTime.parse(value.toString());
+    private static LocalDateTime toDate(Object v) {
+        if (v == null) return null;
+        if (v instanceof LocalDateTime dt) return dt;
+        if (v instanceof java.sql.Timestamp ts) return ts.toLocalDateTime();
+        return LocalDateTime.parse(v.toString());
     }
 
-    @Override
-    public String toString() {
-        return "Account{" +
-                "accountId=" + accountId +
-                ", customerId=" + customerId +
-                ", branchId=" + branchId +
-                ", accountNumber='" + accountNumber + '\'' +
-                ", accountType='" + accountType + '\'' +
-                ", balance=" + balance +
-                ", interestRate=" + interestRate +
-                ", chequebookNumber='" + chequebookNumber + '\'' +
-                ", bankCode='" + bankCode + '\'' +
-                ", createdAt=" + createdAt +
-                '}';
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Account account)) return false;
-        return accountId == account.accountId;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(accountId);
-    }
 }
