@@ -87,14 +87,14 @@ public class CreateAccountController {
             String securityA = securityAnswerField.getText();
 
             Branch selectedBranch = branchBox.getValue();
-            int branchId = selectedBranch.getBranchId();   // ✅ get numeric ID from Branch
+            int branchId = selectedBranch.getBranchId();
 
             System.out.println("DEBUG → Attempting to CREATE account for: " + email);
             System.out.println("DEBUG → Using branch: " + selectedBranch + " (id=" + branchId + ")");
 
             db.customerCreate(
-                    1,                 // TEMP: actor employee ID (e.g. admin)
-                    branchId,          // ✅ real branch_id from DB
+                    1,                 
+                    branchId,          
                     name,
                     email,
                     phone,
@@ -150,7 +150,7 @@ public class CreateAccountController {
         return true;
     }
 
-        /**
+    /**
      * "Back to Home" under the title – just closes this window
      * and returns the user to the Teller dashboard behind it.
      */

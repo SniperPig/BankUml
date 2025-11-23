@@ -65,9 +65,9 @@ public class UpdatePasswordSecurityQuestionController {
     @FXML
     /**
      * Take the user back to their appropriate home page (either TellerDashboard, 
-     * AdministratorDashboard, or CustomerDashboard) when they click "Back to Home"
+     * AdministratorDashboard, or CustomerDashboard) when they click "Back to Account Page"
      * 
-     * @param event the event created when a user clicks "Back to Home" hyperlink
+     * @param event the event created when a user clicks "Back to Account Page" hyperlink
      */
     private void handleBackToAccount(ActionEvent event) {
         Employee currentEmployee = SessionManager.getCurrentEmployee();

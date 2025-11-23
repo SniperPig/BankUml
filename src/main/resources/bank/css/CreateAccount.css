@@ -14,7 +14,6 @@
     -fx-spacing: 10px;
 }
 
-/* All buttons on this screen → purple, like the other forms */
 .button {
     -fx-pref-width: 160px;
     -fx-pref-height: 45px;

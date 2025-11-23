@@ -16,7 +16,6 @@
 
             <Label text="Create New Account" styleClass="title"/>
 
-            <!-- NEW: Back to Home link under the title -->
             <Hyperlink text="Back to Home"
                        focusTraversable="false"
                        onAction="#handleBackToHome"
@@ -41,7 +40,6 @@
                 <ComboBox fx:id="branchBox" promptText="Select Branch"/>
             </VBox>
 
-            <!-- Only the purple Create button now -->
             <HBox spacing="20" alignment="CENTER">
                 <Button fx:id="createBtn"
                         text="Create Account"
@@ -50,7 +48,6 @@
 
         </VBox>
 
-        <!-- NEW: Logout link bottom-right, same style as other screens -->
         <Hyperlink text="Logout"
                    onAction="#handleLogout"
                    style="-fx-font-size: 15px; -fx-text-fill: #6c4fff;"

@@ -106,6 +106,9 @@ public class ResetPasswordFormController {
 
     /**
      * Updates the account password.
+     * 
+     * @param newPassword the new password for the account
+     * @return boolean true if the account password was updated, false otherwise
      */
     private boolean updatePassword(String newPassword) {
         if (account == null) {
