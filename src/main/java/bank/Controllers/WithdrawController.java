@@ -66,14 +66,14 @@ public class WithdrawController {
             account.setBalance(account.getBalance() - amount);
 
      
-            Transaction transaction = new Transaction(
+           Transaction transaction = new Transaction(
                     (int) transactionId,
-                    account.getAccountId(),
-                    LocalDateTime.now(),
-                    "WITHDRAW",
-                    amount,
-                    "CUSTOMER",
-                    account.getCustomerId()
+                    account,                  // pass the Account object itself
+                    amount,                   // the transaction amount
+                    "DEPOSIT",                // transaction type
+                    "COMPLETED",              // transaction status
+                    "CUSTOMER",               // performedByUserId
+                    LocalDateTime.now()       // createdAt
             );
             account.addTransaction(transaction);
 

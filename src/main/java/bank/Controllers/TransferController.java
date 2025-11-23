@@ -71,14 +71,15 @@ public class TransferController {
           
             Transaction transaction = new Transaction(
                     (int) transactionId,
-                    fromAccount.getAccountId(),
-                    LocalDateTime.now(),
-                    "TRANSFER",
-                    amount,
-                    "CUSTOMER",
-                    fromAccount.getCustomerId()
+                    fromAccount,                  // pass the Account object itself
+                    amount,                   // the transaction amount
+                    "DEPOSIT",                // transaction type
+                    "COMPLETED",              // transaction status
+                    "CUSTOMER",               // performedByUserId
+                    LocalDateTime.now()       // createdAt
             );
             fromAccount.addTransaction(transaction);
+
 
             showAlert("Transfer successful!");
 

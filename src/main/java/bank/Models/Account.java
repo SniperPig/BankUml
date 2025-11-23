@@ -1,9 +1,13 @@
 package bank.Models;
 
+import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+
+import bank.DB.BankDb;
 
 public abstract class Account {
 
@@ -82,7 +86,18 @@ public abstract class Account {
 
     public abstract void pay();
     public abstract void receipt();
+    protected abstract boolean canWithdraw(double amount);
 
+
+    public static List<Account> fetchAccountsByCustomer(int customerId) throws SQLException {
+    BankDb db = new BankDb();  // create a DB instance
+    List<Map<String, Object>> rows = db.accountListByCustomer(customerId);
+
+    return rows.stream()
+               .map(Account::mapRowToAccount)
+               .filter(Objects::nonNull)
+               .toList();
+    }
 
 
     public static Account mapRowToAccount(Map<String, Object> row) {
