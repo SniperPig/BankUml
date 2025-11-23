@@ -22,7 +22,7 @@ public class CheckingAccount extends Account {
               accountNumber,
               "CHECKING",       
               balance,
-              0.0,             
+              0.0,  
               chequebookNumber,
               bankCode,
               createdAt);
@@ -46,5 +46,11 @@ public class CheckingAccount extends Account {
     @Override
     public void receipt() {
         System.out.println("Checking account receipt generated.");
+    }
+
+    @Override
+    protected boolean canWithdraw(double amount) {
+        // withdrawal if balance after withdrawal >= -overdraftLimit
+        return (this.balance - amount) >= -overdraftLimit;
     }
 }

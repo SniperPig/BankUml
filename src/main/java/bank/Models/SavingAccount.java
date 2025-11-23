@@ -23,7 +23,7 @@ public class SavingAccount extends Account {
               "SAVING",          
               balance,
               interestRate,
-              null,           
+              null,  
               bankCode,
               createdAt);
 
@@ -46,5 +46,11 @@ public class SavingAccount extends Account {
     @Override
     public void receipt() {
         System.out.println("Savings account receipt generated.");
+    }
+
+    @Override
+    protected boolean canWithdraw(double amount) {
+        // Allow withdrawal only if balance after withdrawal >= minimum balance
+        return (this.balance - amount) >= minimumBalance;
     }
 }
