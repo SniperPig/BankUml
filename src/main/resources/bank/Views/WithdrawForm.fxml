@@ -1,14 +1,63 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
 
-<AnchorPane xmlns:fx="http://javafx.com/fxml"
-            prefHeight="300" prefWidth="400">
+<AnchorPane prefHeight="400.0" prefWidth="450.0"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="bank.Controllers.WithdrawController"
+            style="-fx-background-color: white;">
 
-    <Label text="WITHDRAW FORM"
-           layoutX="100"
-           layoutY="120"
-           style="-fx-font-size: 20px;"/>
+    <children>
+        <VBox alignment="TOP_CENTER" spacing="25.0"
+              AnchorPane.leftAnchor="0.0"
+              AnchorPane.rightAnchor="0.0"
+              AnchorPane.topAnchor="50.0"
+              AnchorPane.bottomAnchor="40.0"
+              prefWidth="400.0">
+            
+            <!-- Padding for VBox -->
+            <padding>
+                <Insets left="25.0" right="25.0"/>
+            </padding>
 
+            <!-- Form Title -->
+            <Label text="Withdraw Funds"
+                   style="-fx-font-size: 36px; -fx-font-weight: bold;"/>
+            
+            <!-- Back Link -->
+            <Hyperlink fx:id="backLink"
+                       text="Back"
+                       focusTraversable="false"
+                       style="-fx-font-size: 16px; -fx-text-fill: #6c4fff;"/>
+            
+            <!-- Input Field -->
+            <VBox spacing="10.0" alignment="CENTER_LEFT" maxWidth="300.0">
+                <children>
+                    <Label text="Enter Amount:" style="-fx-font-size: 16px;"/>
+                    <TextField fx:id="amountField"
+                               promptText="Enter amount"
+                               prefHeight="40.0"
+                               style="-fx-font-size: 15px;"/>
+                </children>
+            </VBox>
+
+            <!-- Notification Label -->
+            <Label fx:id="notificationLabel"
+                   text=""
+                   style="-fx-text-fill: red; -fx-font-size: 14px;"/>
+
+            <!-- Confirm Button -->
+            <HBox spacing="20.0" alignment="CENTER">
+                <children>
+                    <Button fx:id="confirmButton"
+                            text="Withdraw"
+                            prefWidth="120.0"
+                            prefHeight="40.0"
+                            style="-fx-background-color: #7563F6; -fx-text-fill: white; -fx-font-size: 16px; -fx-background-radius: 20px;"/>
+                </children>
+            </HBox>
+        </VBox>
+    </children>
 </AnchorPane>

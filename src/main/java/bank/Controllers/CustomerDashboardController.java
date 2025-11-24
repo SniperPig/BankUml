@@ -1,15 +1,16 @@
 package bank.Controllers;
 
-import bank.Models.Account;
-import bank.Models.Customer;
-import bank.Models.Transaction;
-import bank.SessionManager;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+import bank.Models.Account;
+import bank.Models.Customer;
+import bank.Models.Transaction;
+import bank.SessionManager;
+import bank.DB.BankDb;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -19,11 +20,11 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.stage.Stage;
-import javafx.scene.control.Alert;
 
 public class CustomerDashboardController {
     @FXML private Label welcomeLabel;
@@ -101,38 +102,93 @@ public class CustomerDashboardController {
         switchScene(event, "/bank/Views/UpdatePasswordSecurityQuestion.fxml");
     }
 
-    @FXML
-    /** 
-     * This function is invoked when the customer presses the "Withdraw" button.
-     * It navigates the user to the Withdraw page.
-     * 
-     * @param event the event created by clicking "Withdraw" button
-     */
-    private void handleWithdraw(ActionEvent event) {
-        switchScene(event, "/bank/Views/WithdrawForm.fxml");
-    }
+  @FXML
+private void handleWithdraw(ActionEvent event) {
+    try {
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/bank/Views/WithdrawForm.fxml"));
+        Parent root = loader.load();
 
-    @FXML
-    /** 
-     * This function is invoked when the customer presses the "Deposit" button.
-     * It navigates the user to the Deposit page.
-     * 
-     * @param event the event created by clicking "Deposit" button
-     */
-    private void handleDeposit(ActionEvent event) {
-        switchScene(event, "/bank/Views/DepositForm.fxml");
-    }
+        // Get the controller and pass dependencies
+        WithdrawController controller = loader.getController();
+        Account selectedAccount = accountsTable.getSelectionModel().getSelectedItem();
+        if (selectedAccount == null) {
+            System.out.println("No account selected");
+            return;
+        }
 
-    @FXML
-    /** 
-     * This function is invoked when the customer presses the "Transfer" button.
-     * It navigates the user to the Transfer page.
-     * 
-     * @param event the event created by clicking "Transfer" button
-     */
-    private void handleTransfer(ActionEvent event) {
-        switchScene(event, "/bank/Views/TransferForm.fxml");
+        controller.setDependencies(selectedAccount, new BankDb());
+        controller.setParentPage("customer"); // for back button logic
+
+        // Switch scene
+        Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+        stage.getScene().setRoot(root);
+        stage.sizeToScene();
+
+    } catch (Exception e) {
+        e.printStackTrace();
+        System.out.println("Failed to open WithdrawForm");
     }
+}
+
+
+
+@FXML
+private void handleDeposit(ActionEvent event) {
+    try {
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/bank/Views/DepositForm.fxml"));
+        Parent root = loader.load();
+
+        // Get controller and pass dependencies
+        DepositController controller = loader.getController();
+        Account selectedAccount = accountsTable.getSelectionModel().getSelectedItem();
+        if (selectedAccount == null) {
+            System.out.println("No account selected");
+            return;
+        }
+
+        controller.setDependencies(selectedAccount, new BankDb());
+        controller.setParentPage("customer"); // for back button logic
+
+        // Switch scene
+        Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+        stage.getScene().setRoot(root);
+        stage.sizeToScene();
+
+    } catch (Exception e) {
+        e.printStackTrace();
+        System.out.println("Failed to open DepositForm");
+    }
+}
+
+
+@FXML
+private void handleTransfer(ActionEvent event) {
+    try {
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/bank/Views/TransferForm.fxml"));
+        Parent root = loader.load();
+
+        // Get controller and pass dependencies
+        TransferController controller = loader.getController();
+        Account selectedAccount = accountsTable.getSelectionModel().getSelectedItem();
+        if (selectedAccount == null) {
+            System.out.println("No account selected");
+            return;
+        }
+
+        controller.setDependencies(selectedAccount, new BankDb());
+        controller.setParentPage("customer"); // for back button logic
+
+        // Switch scene
+        Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+        stage.getScene().setRoot(root);
+        stage.sizeToScene();
+
+    } catch (Exception e) {
+        e.printStackTrace();
+        System.out.println("Failed to open TransferForm");
+    }
+}
+
 
     @FXML
     /** 

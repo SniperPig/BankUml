@@ -33,15 +33,17 @@ public class Transaction {
      * @param performedByUserId the ID of the user who performed the transaction
      * @param createdAt the date and time when the transaction was created
      */
-    public Transaction(int transactionID, int account, LocalDateTime amount, String transactionType, double amount2, String performedByUserId, int createdAt) {
+    public Transaction(int transactionID, Account account, double amount, String transactionType,
+                    String status, String performedByUserId, LocalDateTime createdAt) {
         this.transactionID = transactionID;
-        this.account = i;
-        this.amount = localDateTime;
+        this.account = account;               // use the Account object
+        this.amount = amount;                 // use the double amount
         this.transactionType = transactionType;
-        this.status = amount2;
+        this.status = status;                 // use the String status
         this.performedByUserId = performedByUserId;
-        this.createdAt = j;
+        this.createdAt = createdAt;           // use the LocalDateTime
     }
+
 
     /**
      * Get the transaction ID

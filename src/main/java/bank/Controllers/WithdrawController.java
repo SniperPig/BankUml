@@ -6,9 +6,15 @@ import bank.DB.BankDb;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Hyperlink;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
-import javafx.scene.control.Alert;
+import javafx.stage.Stage;
+import javafx.scene.Node;
 
 import java.sql.SQLException;
 import java.time.LocalDateTime;
@@ -19,76 +25,103 @@ public class WithdrawController {
 
     @FXML private TextField amountField;
     @FXML private Button confirmButton;
+    @FXML private Hyperlink backLink;
+    @FXML private Label notificationLabel;
 
     private Account account;
     private BankDb db;
+    private String parentPage; // "customer" or "teller"
 
     public void setDependencies(Account account, BankDb db) {
         this.account = account;
         this.db = db;
     }
 
-    @FXML
-    public void initialize() {
-        if (confirmButton != null) {
-            confirmButton.setOnAction(this::handleWithdraw);
-        }
+    public void setParentPage(String parentPage) {
+        this.parentPage = parentPage;
     }
 
+    @FXML
+    public void initialize() {
+        if (notificationLabel != null) notificationLabel.setText("");
+
+        if (confirmButton != null) confirmButton.setOnAction(this::handleWithdraw);
+        if (backLink != null) backLink.setOnAction(this::handleBack);
+    }
+
+    @FXML
     private void handleWithdraw(ActionEvent event) {
         double amount;
         try {
             amount = Double.parseDouble(amountField.getText());
         } catch (NumberFormatException e) {
-            showAlert("Please enter a valid number for withdrawal.");
+            notificationLabel.setStyle("-fx-text-fill: red;");
+            notificationLabel.setText("Please enter a valid number.");
             return;
         }
 
         if (amount <= 0) {
-            showAlert("Withdrawal amount must be positive.");
+            notificationLabel.setStyle("-fx-text-fill: red;");
+            notificationLabel.setText("Withdrawal amount must be positive.");
             return;
         }
 
         if (amount > account.getBalance()) {
-            showAlert("Insufficient balance for this withdrawal.");
+            notificationLabel.setStyle("-fx-text-fill: red;");
+            notificationLabel.setText("Insufficient balance.");
             return;
         }
 
         try {
-
+            // Perform DB withdrawal
             db.transactionWithdraw(account.getAccountId(), amount, "CUSTOMER", account.getCustomerId());
 
-          
             List<Map<String, Object>> lastTx = db.transactionGetRecentByAccount(account.getAccountId(), 1);
             long transactionId = (Long) lastTx.get(0).get("transaction_id");
 
-          
             account.setBalance(account.getBalance() - amount);
 
-     
-           Transaction transaction = new Transaction(
+            Transaction transaction = new Transaction(
                     (int) transactionId,
-                    account,                  // pass the Account object itself
-                    amount,                   // the transaction amount
-                    "DEPOSIT",                // transaction type
-                    "COMPLETED",              // transaction status
-                    "CUSTOMER",               // performedByUserId
-                    LocalDateTime.now()       // createdAt
+                    account,
+                    amount,
+                    "WITHDRAWAL",
+                    "COMPLETED",
+                    "CUSTOMER",
+                    LocalDateTime.now()
             );
             account.addTransaction(transaction);
 
-            showAlert("Withdrawal successful!");
+            notificationLabel.setStyle("-fx-text-fill: green;");
+            notificationLabel.setText("Withdrawal successful!");
+            amountField.clear();
 
         } catch (SQLException e) {
             e.printStackTrace();
-            showAlert("Withdrawal failed: " + e.getMessage());
+            notificationLabel.setStyle("-fx-text-fill: red;");
+            notificationLabel.setText("Withdrawal failed: " + e.getMessage());
         }
     }
 
-    private void showAlert(String message) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
+    @FXML
+    private void handleBack(ActionEvent event) {
+        try {
+            String path = "customer".equals(parentPage) ?
+                    "/bank/Views/CustomerDashboard.fxml" :
+                    "/bank/Views/TellerDashboard.fxml";
+
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(path));
+            Parent root = loader.load();
+
+            Scene scene = ((Node) event.getSource()).getScene();
+            Stage stage = (Stage) scene.getWindow();
+            stage.setScene(new Scene(root));
+            stage.sizeToScene();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            notificationLabel.setStyle("-fx-text-fill: red;");
+            notificationLabel.setText("Failed to navigate back.");
+        }
     }
 }
