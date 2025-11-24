@@ -70,7 +70,7 @@ public class WithdrawController {
                     (int) transactionId,
                     account,                  // pass the Account object itself
                     amount,                   // the transaction amount
-                    "DEPOSIT",                // transaction type
+                    "WITHDRAWAL",             // transaction type
                     "COMPLETED",              // transaction status
                     "CUSTOMER",               // performedByUserId
                     LocalDateTime.now()       // createdAt

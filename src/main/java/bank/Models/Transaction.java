@@ -29,18 +29,19 @@ public class Transaction {
      * @param account the account associated with the transaction
      * @param amount the amount involved in the transaction
      * @param transactionType the type of transaction (e.g., deposit, withdrawal)
-     * @param amount2 the current status of the transaction
+     * @param status the current status of the transaction
      * @param performedByUserId the ID of the user who performed the transaction
      * @param createdAt the date and time when the transaction was created
      */
-    public Transaction(int transactionID, int account, LocalDateTime amount, String transactionType, double amount2, String performedByUserId, int createdAt) {
+    public Transaction(int transactionID, Account account, double amount, String transactionType, String status,
+            String performedByUserId, LocalDateTime createdAt) {
         this.transactionID = transactionID;
-        this.account = i;
-        this.amount = localDateTime;
+        this.account = account;
+        this.amount = amount;
         this.transactionType = transactionType;
-        this.status = amount2;
+        this.status = status;
         this.performedByUserId = performedByUserId;
-        this.createdAt = j;
+        this.createdAt = createdAt;
     }
 
     /**

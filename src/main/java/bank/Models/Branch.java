@@ -18,6 +18,7 @@ public class Branch {
         this.branchName = name;
         this.branchAddress = address;
         this.bank = null; // DB does not return Bank object
+    }
 
     public Branch(String code, String address, Bank bank) {
         this.branchCode = code;
