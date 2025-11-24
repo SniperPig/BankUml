@@ -79,7 +79,10 @@ public class TellerDashboardController {
         govIdColumn.setCellValueFactory(cell -> new SimpleStringProperty(safeString(cell.getValue().getGovtID())));
         addressColumn.setCellValueFactory(cell -> new SimpleStringProperty(safeString(cell.getValue().getAddress())));
 
-        customerTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        // Allow horizontal scroll when columns go out of bounds
+        customerTable.setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
+
+
         populateSampleData();
         customerTable.setItems(filteredData);
     }
