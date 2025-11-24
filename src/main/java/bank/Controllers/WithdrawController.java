@@ -83,12 +83,12 @@ public class WithdrawController {
 
             Transaction transaction = new Transaction(
                     (int) transactionId,
-                    account,
-                    amount,
-                    "WITHDRAWAL",
-                    "COMPLETED",
-                    "CUSTOMER",
-                    LocalDateTime.now()
+                    account,                  // pass the Account object itself
+                    amount,                   // the transaction amount
+                    "DEPOSIT",                // transaction type
+                    "COMPLETED",              // transaction status
+                    "CUSTOMER",               // performedByUserId
+                    LocalDateTime.now()       // createdAt
             );
             account.addTransaction(transaction);
 
