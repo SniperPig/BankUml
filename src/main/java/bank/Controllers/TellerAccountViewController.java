@@ -28,7 +28,7 @@ import javafx.stage.Stage;
 public class TellerAccountViewController {
 
     private static final DateTimeFormatter DATE_FORMATTER =
-            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+            DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     @FXML private Label accountHeading;
     @FXML private TableView<Account> accountsTable;

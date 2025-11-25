@@ -342,7 +342,7 @@ private void handleTransfer(ActionEvent event) {
             return "";
         }
 
-        return DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm").format(dateTime);
+        return DateTimeFormatter.ofPattern("yyyy-MM-dd").format(dateTime);
     }
 
     /**
