@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import bank.SessionManager;
-
+import bank.DB.BankDb;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -105,35 +105,88 @@ public class TellerAccountViewController {
         switchScene(event, "/bank/Views/TellerDashboard.fxml");
     }
 
-    /**
-     * Handles the withdraw action
-     * 
-     * @param event the action event triggered by the withdraw button
-     */
     @FXML
-    private void handleWithdraw(ActionEvent event) {
-        switchScene(event, "/bank/Views/WithdrawForm.fxml");
-    }
+private void handleWithdraw(ActionEvent event) {
+    try {
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/bank/Views/WithdrawForm.fxml"));
+        Parent root = loader.load();
 
-    /**
-     * Handles the deposit action
-     * 
-     * @param event the action event triggered by the deposit button
-     */
-    @FXML
-    private void handleDeposit(ActionEvent event) {
-        switchScene(event, "/bank/Views/DepositForm.fxml");
-    }
+        WithdrawController controller = loader.getController();
 
-    /**
-     * Handles the transfer action
-     * 
-     * @param event the action event triggered by the transfer button
-     */
-    @FXML
-    private void handleTransfer(ActionEvent event) {
-        switchScene(event, "/bank/Views/TransferForm.fxml");
+        Account selectedAccount = accountsTable.getSelectionModel().getSelectedItem();
+        if (selectedAccount == null) {
+            System.out.println("No account selected");
+            return;
+        }
+
+        controller.setDependencies(selectedAccount, new BankDb());
+        controller.setParentPage("teller");
+
+        Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+        stage.getScene().setRoot(root);
+        stage.sizeToScene();
+
+    } catch (Exception e) {
+        e.printStackTrace();
+        System.out.println("Failed to open WithdrawForm");
     }
+}
+
+@FXML
+private void handleDeposit(ActionEvent event) {
+    try {
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/bank/Views/DepositForm.fxml"));
+        Parent root = loader.load();
+
+        DepositController controller = loader.getController();
+
+        Account selectedAccount = accountsTable.getSelectionModel().getSelectedItem();
+        if (selectedAccount == null) {
+            System.out.println("No account selected");
+            return;
+        }
+
+        controller.setDependencies(selectedAccount, new BankDb());
+        controller.setParentPage("teller");
+
+        Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+        stage.getScene().setRoot(root);
+        stage.sizeToScene();
+
+    } catch (Exception e) {
+        e.printStackTrace();
+        System.out.println("Failed to open DepositForm");
+    }
+}
+
+
+@FXML
+private void handleTransfer(ActionEvent event) {
+    try {
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/bank/Views/TransferForm.fxml"));
+        Parent root = loader.load();
+
+        TransferController controller = loader.getController();
+
+        Account selectedAccount = accountsTable.getSelectionModel().getSelectedItem();
+        if (selectedAccount == null) {
+            System.out.println("No account selected");
+            return;
+        }
+
+        controller.setDependencies(selectedAccount, new BankDb());
+        controller.setParentPage("teller");
+
+        Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+        stage.getScene().setRoot(root);
+        stage.sizeToScene();
+
+    } catch (Exception e) {
+        e.printStackTrace();
+        System.out.println("Failed to open TransferForm");
+    }
+}
+
 
     /**
      * Handles the logout action and switches back to the login form
