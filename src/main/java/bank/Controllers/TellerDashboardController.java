@@ -183,13 +183,12 @@ public class TellerDashboardController {
 
     /**
      * Handles the action of creating a new customer account
+     * 
+     * @param event the event that is created when a teller presses "create account" button
      */
     @FXML
-    private void handleCreateAccount() {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setHeaderText(null);
-        alert.setContentText("Create account flow not implemented yet.");
-        alert.showAndWait();
+    private void handleCreateAccount(ActionEvent event) {
+        switchScene(event, "/bank/Views/CreateAccountForm.fxml");
     }
 
     /**
