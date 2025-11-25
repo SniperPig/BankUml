@@ -14,6 +14,7 @@
     -fx-spacing: 10px;
 }
 
+/* All buttons on this screen → purple, like the other forms */
 .button {
     -fx-pref-width: 160px;
     -fx-pref-height: 45px;
@@ -26,4 +27,20 @@
 
 .button:hover {
     -fx-background-color: #5d49f0;
+}
+
+/* Date picker arrows → transparent background, small dark arrows */
+.date-picker .arrow-button,
+.date-picker-popup .month-year-pane .button {
+    -fx-background-color: transparent !important;
+    -fx-background-radius: 0 !important;
+    -fx-padding: 4 6 !important;
+}
+
+/* Make the arrows small and dark again */
+.date-picker .arrow-button .arrow,
+.date-picker-popup .month-year-pane .button .arrow {
+    -fx-background-color: #444 !important;
+    -fx-min-width: 10px;
+    -fx-min-height: 10px;
 }
