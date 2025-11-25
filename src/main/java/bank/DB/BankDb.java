@@ -781,28 +781,138 @@ public class BankDb {
  * Returns all branches from the database as Branch model objects.
  * Uses a direct SELECT on the branch table.
  */
-public List<Branch> getAllBranches() throws SQLException {
+    public List<Branch> getAllBranches() throws SQLException {
 
-    String sql = "SELECT branch_id, branch_code, branch_name, branch_address FROM branch";
+        String sql = "SELECT branch_id, branch_code, branch_name, branch_address FROM branch";
+
+        try (Connection conn = DbManager.getConnection();
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            ResultSet rs = stmt.executeQuery()) {
+
+            List<Branch> result = new ArrayList<>();
+
+            while (rs.next()) {
+                int branchId   = rs.getInt("branch_id");
+                String code    = rs.getString("branch_code");
+                String name    = rs.getString("branch_name");
+                String address = rs.getString("branch_address");
+
+                Branch b = new Branch(branchId, code, name, address);
+                result.add(b);
+            }
+
+            return result;
+        }
+    }
+
+    /**
+     * Allows an admin to update an employee's role (and optionally branch),
+     * while validating the admin's secondary password and writing to the audit log.
+     *
+     * This method relies on a stored procedure:
+     *
+     *   sp_admin_update_user_role(
+     *       IN p_actor_admin_id INT,
+     *       IN p_target_employee_id INT,
+     *       IN p_new_role VARCHAR(50),
+     *       IN p_new_branch_id INT,
+     *       IN p_admin_secondary_password_plain VARCHAR(255),
+     *       IN p_new_admin_secondary_password_plain VARCHAR(255)
+     *   )
+     *
+     * The stored procedure should:
+     *  - Verify the actor admin's secondary password.
+     *  - Update the target employee's role and branch.
+     *  - If p_new_admin_secondary_password_plain is not NULL and new role is ADMIN,
+     *    hash it and store it in admin_secondary_password_hash.
+     *  - Insert an entry in the audit log with the branch.
+     */
+    public void adminUpdateUserRole(
+            int actorAdminId,
+            int targetEmployeeId,
+            String newRole,
+            Integer newBranchId,
+            String adminSecondaryPasswordPlain,
+            String newAdminSecondaryPasswordPlain
+    ) throws SQLException {
+
+        try (Connection conn = DbManager.getConnection();
+                CallableStatement stmt =
+                        conn.prepareCall("{CALL sp_admin_update_user_role(?,?,?,?,?,?)}")) {
+
+            stmt.setInt(1, actorAdminId);
+            stmt.setInt(2, targetEmployeeId);
+            stmt.setString(3, newRole);
+
+            if (newBranchId != null) {
+                stmt.setInt(4, newBranchId);
+            } else {
+                stmt.setNull(4, Types.INTEGER);
+            }
+
+            stmt.setString(5, adminSecondaryPasswordPlain);
+            stmt.setString(6, newAdminSecondaryPasswordPlain);
+
+            stmt.execute();
+        }
+    }
+
+    // Audit Log
+public List<Map<String, Object>> getAuditLog(
+        Integer branchId,
+        String actorType,        // "CUSTOMER", "EMPLOYEE" or null
+        Integer actorId,
+        Timestamp from,
+        Timestamp to
+) throws SQLException {
+
+    List<Map<String, Object>> result = Collections.emptyList();
 
     try (Connection conn = DbManager.getConnection();
-         PreparedStatement stmt = conn.prepareStatement(sql);
-         ResultSet rs = stmt.executeQuery()) {
+         CallableStatement stmt =
+                 conn.prepareCall("{CALL sp_audit_log_search(?,?,?,?,?)}")) {
 
-        List<Branch> result = new ArrayList<>();
-
-        while (rs.next()) {
-            int branchId   = rs.getInt("branch_id");
-            String code    = rs.getString("branch_code");
-            String name    = rs.getString("branch_name");
-            String address = rs.getString("branch_address");
-
-            Branch b = new Branch(branchId, code, name, address);
-            result.add(b);
+        if (branchId == null) {
+            stmt.setNull(1, Types.INTEGER);
+        } else {
+            stmt.setInt(1, branchId);
         }
 
-        return result;
+        if (actorType == null || actorType.isBlank()) {
+            stmt.setNull(2, Types.VARCHAR);
+        } else {
+            stmt.setString(2, actorType);
+        }
+
+        if (actorId == null) {
+            stmt.setNull(3, Types.INTEGER);
+        } else {
+            stmt.setInt(3, actorId);
+        }
+
+        if (from == null) {
+            stmt.setNull(4, Types.TIMESTAMP);
+        } else {
+            stmt.setTimestamp(4, from);
+        }
+
+        if (to == null) {
+            stmt.setNull(5, Types.TIMESTAMP);
+        } else {
+            stmt.setTimestamp(5, to);
+        }
+
+        boolean hasResult = stmt.execute();
+        if (hasResult) {
+            try (ResultSet rs = stmt.getResultSet()) {
+                result = ResultSetUtils.toList(rs);
+            }
+        }
     }
+
+    return result;
 }
+
+
 
 }

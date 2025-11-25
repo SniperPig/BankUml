@@ -4,11 +4,55 @@
 <?import javafx.scene.control.*?>
 
 <AnchorPane xmlns:fx="http://javafx.com/fxml"
-            prefHeight="300" prefWidth="400">
+            fx:controller="bank.Controllers.AdminDashboardController"
+            prefWidth="900.0" prefHeight="700.0"
+            style="-fx-background-color: white;">
+    <children>
+        <VBox spacing="20.0" AnchorPane.topAnchor="20.0" AnchorPane.leftAnchor="20.0"
+              AnchorPane.rightAnchor="20.0" AnchorPane.bottomAnchor="20.0">
 
-    <Label text="ADMIN DASHBOARD"
-           layoutX="100"
-           layoutY="120"
-           style="-fx-font-size: 20px;"/>
+            <!-- Header -->
+            <HBox spacing="10.0">
+                <Label fx:id="welcomeLabel" text="Welcome, Admin"
+                       style="-fx-font-size: 28px; -fx-font-weight: bold;"/>
+                <Pane HBox.hgrow="ALWAYS"/>
+                <Hyperlink text="View Audit Log" onAction="#handleViewAuditLog"
+                           style="-fx-font-size: 18px; -fx-text-fill: #6c4fff;"/>
+                <Hyperlink text="Update Password" onAction="#handleUpdatePassword"
+                           style="-fx-font-size: 18px; -fx-text-fill: #6c4fff;"/>
+                <Hyperlink text="Logout" onAction="#handleLogout"
+                           style="-fx-font-size: 18px; -fx-text-fill: #6c4fff;"/>
+            </HBox>
 
+            <!-- Search bar -->
+            <HBox spacing="10.0">
+                <Label text="Search:"/>
+                <TextField fx:id="searchField" promptText="Enter keyword..."/>
+                <ComboBox fx:id="searchCategoryBox" prefWidth="180.0"/>
+                <Button text="Search" onAction="#handleSearch"/>
+            </HBox>
+
+            <!-- Table -->
+            <TableView fx:id="userTable" VBox.vgrow="ALWAYS"
+                       style="-fx-font-size: 16px; -fx-text-fill: #6c4fff;">
+                <columns>
+                    <TableColumn fx:id="idColumn" text="ID" prefWidth="70.0"/>
+                    <TableColumn fx:id="typeColumn" text="Type" prefWidth="80.0"/>
+                    <TableColumn fx:id="nameColumn" text="Name" prefWidth="160.0"/>
+                    <TableColumn fx:id="emailColumn" text="Email" prefWidth="200.0"/>
+                    <TableColumn fx:id="phoneColumn" text="Phone" prefWidth="120.0"/>
+                    <TableColumn fx:id="dobColumn" text="DOB" prefWidth="100.0"/>
+                    <TableColumn fx:id="addressColumn" text="Address" prefWidth="200.0"/>
+                    <TableColumn fx:id="roleColumn" text="Role" prefWidth="100.0"/>
+                    <TableColumn fx:id="branchColumn" text="Branch" prefWidth="120.0"/>
+                </columns>
+            </TableView>
+
+            <!-- Footer actions -->
+            <HBox alignment="CENTER" spacing="10.0">
+                <Button text="Manage Selected User" onAction="#handleManageUser"/>
+            </HBox>
+
+        </VBox>
+    </children>
 </AnchorPane>
