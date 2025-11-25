@@ -30,6 +30,7 @@ public class CustomerDashboardController {
     @FXML private Label welcomeLabel;
     @FXML private TableView<Account> accountsTable;
     @FXML private TableColumn<Account, String> accountTypeColumn;
+    @FXML private TableColumn<Account, String> accountIdColumn;
     @FXML private TableColumn<Account, String> accountNumberColumn;
     @FXML private TableColumn<Account, String> accountBalanceColumn;
     @FXML private TableView<Transaction> transactionsTable;
@@ -357,6 +358,8 @@ private void handleTransfer(ActionEvent event) {
         // First taking care of the account table 
         accountTypeColumn.setCellValueFactory(cell ->
                 new SimpleStringProperty(safeString(cell.getValue().getAccountType())));
+        accountIdColumn.setCellValueFactory(cell ->
+                new SimpleStringProperty(String.valueOf(cell.getValue().getAccountId())));
         accountNumberColumn.setCellValueFactory(cell ->
                 new SimpleStringProperty(safeString(cell.getValue().getAccountNumber())));
         accountBalanceColumn.setCellValueFactory(cell ->

@@ -33,6 +33,7 @@ public class TellerAccountViewController {
     @FXML private Label accountHeading;
     @FXML private TableView<Account> accountsTable;
     @FXML private TableColumn<Account, String> accountTypeColumn;
+    @FXML private TableColumn<Account, String> accountIdColumn;
     @FXML private TableColumn<Account, String> accountNumberColumn;
     @FXML private TableColumn<Account, String> accountBalanceColumn;
     @FXML private TableView<Transaction> transactionsTable;
@@ -54,6 +55,8 @@ public class TellerAccountViewController {
     private void initialize() {
         accountTypeColumn.setCellValueFactory(cell ->
                 new SimpleStringProperty(cell.getValue().getAccountType()));
+        accountIdColumn.setCellValueFactory(cell ->
+                new SimpleStringProperty(String.valueOf(cell.getValue().getAccountId())));
         accountNumberColumn.setCellValueFactory(cell ->
                 new SimpleStringProperty(cell.getValue().getAccountNumber()));
         accountBalanceColumn.setCellValueFactory(cell ->

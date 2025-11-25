@@ -58,6 +58,7 @@
                                    styleClass="styled-table">
                             <columns>
                                 <TableColumn fx:id="accountTypeColumn" text="Type" prefWidth="160.0"/>
+                                <TableColumn fx:id="accountIdColumn" text="ID" prefWidth="50.0"/>
                                 <TableColumn fx:id="accountNumberColumn" text="Account Number" prefWidth="240.0"/>
                                 <TableColumn fx:id="accountBalanceColumn" text="Current Balance" prefWidth="200.0"/>
                             </columns>
