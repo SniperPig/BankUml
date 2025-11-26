@@ -8,6 +8,11 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class EmployeeTest {
 
+    /**
+     * This test verifies that an admin employee can successfully log in
+     * using both their primary password and secondary admin password.
+     * It also checks that all other fields remain unchanged.
+     */
     @Test
     void testVerifyAdminLoginSuccess() {
         Branch currentBranch = new Branch(1, "B1", "BranchStub", "1 Avenue");
@@ -36,6 +41,11 @@ class EmployeeTest {
         assertEquals("Admin", currentEmployee.getRole());
     }
 
+    /**
+     * This test verifies that an admin employee's login fails
+     * when an incorrect secondary admin password is provided. It also ensures that the primary password remains valid
+     * and that all other fields remain unchanged.
+     */
     @Test
     void testVerifyAdminLoginFailsWithWrongAdminPassword() {
         Branch currentBranch = new Branch(1, "B1", "BranchStub", "1 Avenue");
@@ -56,6 +66,10 @@ class EmployeeTest {
         assertEquals("Admin", currentEmployee.getRole());
     }
 
+    /**
+     * This test verifies that the getRole method returns the correct role
+     * assigned to the employee. It also checks that all other fields remain unchanged.
+     */
     @Test
     void testGetRoleReturnsStoredValue() {
         Branch currentBranch = new Branch(1, "B1", "BranchStub", "1 Avenue");
@@ -80,7 +94,10 @@ class EmployeeTest {
         assertEquals("99 Admin Ave", currentEmployee.getAddress());
         assertSame(currentBranch, currentEmployee.getBranch());
     }
-
+    /**
+     * This test verifies that an admin employee can change the role
+     * of another employee successfully. It also checks that all other fields remain unchanged.
+     */
     @Test
     void testAdminCanChangeOtherEmployeeRole() {
         Branch currentBranch = new Branch(1, "B1", "BranchStub", "1 Avenue");
