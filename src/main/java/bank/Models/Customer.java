@@ -170,12 +170,34 @@ public class Customer implements PasswordResettable {
     }
 
     /**
+     * Set the security question for password recovery.
+     * @param securityQuestion the question to store
+     */
+    public void setSecurityQuestion(String securityQuestion) {
+        if (securityQuestion == null || securityQuestion.isBlank()) {
+            throw new IllegalArgumentException("Security question cannot be empty.");
+        }
+        this.securityQuestion = securityQuestion.trim();
+    }
+
+    /**
      * Get the security answer
      * @return securityAnswer
      */
     @Override
     public String getSecurityAnswer() {
         return securityAnswer;
+    }
+
+    /**
+     * Set the security answer for password recovery.
+     * @param securityAnswer the answer to store
+     */
+    public void setSecurityAnswer(String securityAnswer) {
+        if (securityAnswer == null || securityAnswer.isBlank()) {
+            throw new IllegalArgumentException("Security answer cannot be empty.");
+        }
+        this.securityAnswer = securityAnswer.trim();
     }
 
     /**
@@ -256,7 +278,9 @@ public class Customer implements PasswordResettable {
         }
     }
 
-    // Display customers info
+    /**
+     * Prints customer information to the console.
+     */
     public void printCustomerInfo() {
         System.out.println("Customer's info: " );
         System.out.println("name: "+ customerName);
@@ -265,6 +289,9 @@ public class Customer implements PasswordResettable {
     /**
      * Fetches customers for the specified branch filtered by the optional search query.
      * Controllers can call this instead of dealing directly with the stored procedures.
+     * @param branchId the branch ID to filter customers (not used in current implementation)
+     * @param searchQuery optional search query to filter customers by name or email
+     * @return list of customers matching the criteria
      */
     public static List<Customer> fetchCustomersFromDB(int branchId, String searchQuery) throws SQLException {
         List<Map<String, Object>> rows = BANK_DB.customerSearchAll(
@@ -278,6 +305,7 @@ public class Customer implements PasswordResettable {
 
     /**
      * Fetch all customers regardless of branch.
+     * @return list of all customers
      */
     public static List<Customer> fetchAllCustomers() throws SQLException {
         List<Map<String, Object>> rows = BANK_DB.fetchAllCustomers();
@@ -290,6 +318,8 @@ public class Customer implements PasswordResettable {
 
     /**
      * Loads a single customer by id or returns null if not found.
+     * @param customerId the ID of the customer to fetch
+     * @return the Customer object if found, or null if not found
      */
     public static Customer fetchCustomerById(int customerId) throws SQLException {
         List<Map<String, Object>> rows = BANK_DB.customerGetById(customerId);
@@ -301,6 +331,8 @@ public class Customer implements PasswordResettable {
 
     /**
      * Loads a single customer by email or returns null if not found.
+     * @param email the email of the customer to fetch
+     * @return the Customer object if found, or null if not found
      */
     public static Customer fetchCustomerByEmail(String email) throws SQLException {
         List<Map<String,Object>> rows = BANK_DB.customerGetByEmail(email);
@@ -310,6 +342,8 @@ public class Customer implements PasswordResettable {
     
     /**
      * Creates a Customer object from a database row.
+     * @param row the database row as a map
+     * @return the Customer object
      */
     private static Customer fromRow(Map<String, Object> row) {
         Customer customer = new Customer(
@@ -333,6 +367,8 @@ public class Customer implements PasswordResettable {
 
     /**
      * Converts various object types to LocalDate.
+     * @param value the object to convert
+     * @return the LocalDate representation or null if input is null
      */
     private static LocalDate toLocalDate(Object value) {
         if (value == null) {
