@@ -178,11 +178,21 @@ public class Employee implements PasswordResettable {
         this.role = role;
     }
 
+    /**
+     * Set the security question and answer for password reset
+     * @param question to set
+     * @param answer to set
+     */
     @Override
     public String getSecurityQuestion() {
         return securityQuestion;
     }
 
+    /**
+     * Set the security question and answer for password reset
+     * @param question to set
+     * @param answer to set
+     */
     @Override
     public String getSecurityAnswer() {
         return securityAnswer;
@@ -233,6 +243,25 @@ public class Employee implements PasswordResettable {
     }
 
     /**
+     * Verifies admin login by validating both the primary and admin passwords.
+     * @param primaryPassword the main account password
+     * @param adminPassword the admin secondary password
+     * @return true if role is admin and both passwords match stored hashes
+     */
+    public boolean verifyAdminLogin(String primaryPassword, String adminPassword) {
+        if (role == null || !role.equalsIgnoreCase("Admin")) {
+            return false;
+        }
+
+        boolean primaryValid = isPasswordValid(primaryPassword);
+        boolean adminValid = adminSecondaryPasswordHash != null
+                && adminPassword != null
+                && adminSecondaryPasswordHash.equals(hashPassword(adminPassword));
+
+        return primaryValid && adminValid;
+    }
+
+    /**
      * Hashes the given password using SHA-256.
      * @param password the plain text password
      * @return the hashed password as a hexadecimal string
@@ -251,6 +280,12 @@ public class Employee implements PasswordResettable {
         }
     }
 
+    /**
+     * Sets a new password for the employee and updates it in the database.
+     * @param password the new plain text password
+     * @throws IllegalArgumentException if the password is null or blank
+     * @throws RuntimeException if the database update fails
+     */
     @Override
     public void setPassword(String password) {
         if (password == null || password.isBlank()) {
@@ -266,12 +301,24 @@ public class Employee implements PasswordResettable {
         }
     }
 
+    /**
+     * Loads a single employee by id or returns null if not found.
+     * Controllers can call this instead of dealing directly with the stored procedures.
+     * @param employeeID the ID of the employee to fetch
+     * @return the Employee object if found, or null if not found
+     */
     public static Employee fetchEmployeeByID(int employeeID) throws SQLException {
         List<Map<String, Object>> rows = BANK_DB.employeeGetById(employeeID);
 
         return rows.isEmpty() ? null : mapRowToEmployee(rows.get(0));
     }
 
+    /**
+     * Loads a single employee by email or returns null if not found.
+     * Controllers can call this instead of dealing directly with the stored procedures.
+     * @param email the email of the employee to fetch
+     * @return the Employee object if found, or null if not found
+     */
     public static Employee fetchEmployeeByEmail(String email) throws SQLException {
         List<Map<String, Object>> rows = BANK_DB.employeeGetByEmail(email);
 
@@ -286,9 +333,11 @@ public class Employee implements PasswordResettable {
                    .toList();
     }
 
-    /*
-     * Used to create an employee object from a database row
-     */
+   /**
+    * Maps a database row to an Employee object. 
+    * @param row the database row as a map
+    * @return the Employee object
+    */
     private static Employee mapRowToEmployee(Map<String, Object> row) {
         Employee employee = new Employee(
             Objects.toString(row.get("employee_name"), null),
@@ -313,6 +362,8 @@ public class Employee implements PasswordResettable {
 
     /**
      * Converts supported DB timestamp/date types to LocalDate.
+     * @param value the object to convert
+     * @return the LocalDate representation or null if input is null
      */
     private static LocalDate toLocalDate(Object value) {
         if (value == null) {
