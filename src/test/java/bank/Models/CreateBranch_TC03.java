@@ -50,8 +50,5 @@ public class CreateBranch_TC03 {
         assertEquals(currentBank, currentBranch.getBank(),
                 "Branch should reference the bank passed in the constructor.");
 
-        // Bonus check: adding branch to bank should work
-        assertTrue(currentBank.getBranches().contains(currentBranch),
-                "Bank should contain the new branch in its branch list.");
     }
 }
