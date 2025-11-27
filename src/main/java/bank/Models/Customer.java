@@ -264,7 +264,7 @@ public class Customer implements PasswordResettable {
      * @param password the plain text password
      * @return the hashed password as a hexadecimal string
      */
-    private String hashPassword(String password) {
+    public static String hashPassword(String password) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             byte[] hashedBytes = digest.digest(password.getBytes(StandardCharsets.UTF_8));

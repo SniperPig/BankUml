@@ -3,6 +3,8 @@ package bank.Controllers;
 import bank.DB.BankDb;
 import bank.Models.Branch;
 import bank.Models.Employee;
+import bank.Models.Customer;
+import java.security.SecureRandom;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
@@ -70,6 +72,9 @@ public class CreateAccountController {
             Pattern.compile("^[A-Za-z ]+$");              // letters + spaces only
 
     private final BankDb db = new BankDb();
+
+    // used for cheque numbers
+    private static final SecureRandom RNG = new SecureRandom();
 
     /**
      * Initializes the view by loading:
@@ -165,6 +170,9 @@ private void handleCreate(javafx.event.ActionEvent event) {
                            ", employee branch: " + employeeBranchId);
 
         // 4) CREATE CUSTOMER and get the new customer_id back
+        // hash the password first
+        String hashedPassword = Customer.hashPassword(password);
+
         int newCustomerId = db.customerCreate(
                 actorEmployeeId,
                 customerBranchId,
@@ -174,7 +182,7 @@ private void handleCreate(javafx.event.ActionEvent event) {
                 java.sql.Date.valueOf(dob),
                 govId,
                 address,
-                password,
+                hashedPassword,
                 securityQ,
                 securityA
         );
@@ -182,27 +190,32 @@ private void handleCreate(javafx.event.ActionEvent event) {
         System.out.println("DEBUG → New customer_id = " + newCustomerId);
 
         // 5) OPEN TWO ACCOUNTS for this customer
-        //    Branch for accounts = branch of the current employee
+
+        // First the saving
         db.accountOpen(
                 actorEmployeeId,
                 newCustomerId,
                 employeeBranchId,   // branch of the employee
                 "SAVING",           // make sure this matches your DB enum
-                0.0,
-                null,
-                null,
-                null
+                0.0, // empty balance
+                0.01, // initial interest rate 
+                null, // no checkbook number
+                "1" // bank code
         );
 
+        // And then for checking
+        // get cheque number
+        long n = Math.abs(RNG.nextLong()) % 1_000_000_0000L; // 0–9,999,999,999
+        String chequebookNumber = "CH-" + String.format("%010d", n);
         db.accountOpen(
             actorEmployeeId,
             newCustomerId,
             employeeBranchId,
             "CHECKING",
             0.0,
-            null,
-            null,
-            null
+            null, // no interest rate
+            chequebookNumber,
+            "1"
         );
 
         System.out.println("DEBUG → SAVING and CHECKING accounts created.");
@@ -373,7 +386,7 @@ private void handleCreate(javafx.event.ActionEvent event) {
         a.setContentText(msg);
         a.show();
     }
-    
+
     /**
      * Displays an informational popup.
      *

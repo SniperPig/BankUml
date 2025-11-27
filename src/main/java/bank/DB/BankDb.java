@@ -16,10 +16,7 @@ import bank.Models.Branch;
  * accounts, transactions, audit, reporting, and branch lookup).
  * All methods open and close their own connections via {@link DbManager}.
  */
-public class BankDb {
-
-
-    
+public class BankDb {    
 
     /* =========================================================
        A) SECURITY & AUTHENTICATION
