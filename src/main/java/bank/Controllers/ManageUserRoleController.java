@@ -50,6 +50,9 @@ public class ManageUserRoleController {
 
     /**
      * Called by AdminDashboardController after loading this FXML.
+     *
+     * @param selectedUser the user record selected in the admin dashboard
+     *                     whose role/branch may be updated in this screen
      */
     public void initializeData(UserRecord selectedUser) {
         this.selectedUser = selectedUser;
@@ -109,6 +112,8 @@ public class ManageUserRoleController {
 
     /**
      * Show/hide branch & new secondary password fields based on selected role.
+     *
+     * @param role the role selected in the role combo box
      */
     private void updateVisibilityForRole(String role) {
         if (role == null) {
@@ -143,6 +148,16 @@ public class ManageUserRoleController {
         }
     }
 
+    /**
+     * Handles the "Save" action.
+     * <p>
+     * Validates the selected role, branch (when required), and the admin's
+     * secondary password, then calls {@link BankDb#adminUpdateUserRole(int, int, String, Integer, String, String)}
+     * to persist the role/branch updates and show a confirmation dialog.
+     * On success, navigates back to the admin dashboard.
+     *
+     * @param event the action event triggered by clicking the Save button
+     */
     @FXML
     private void handleSaveChanges(ActionEvent event) {
         errorLabel.setText("");
@@ -248,16 +263,35 @@ public class ManageUserRoleController {
         }
     }
 
+    /**
+     * Handles the "Cancel" action by returning to the admin dashboard
+     * without applying any changes.
+     *
+     * @param event the action event triggered by clicking the Cancel button
+     */
     @FXML
     private void handleCancel(ActionEvent event) {
         goBackToAdminDashboard(event);
     }
 
+    /**
+     * Handles the "Back" action in the UI and navigates to the admin dashboard.
+     *
+     * @param event the action event triggered by a Back button or link
+     */
     @FXML
     private void handleBackToAdmin(ActionEvent event) {
         goBackToAdminDashboard(event);
     }
 
+    /**
+     * Utility method to switch the current scene back to the Admin Dashboard view.
+     * <p>
+     * Loads {@code /bank/Views/AdminDashboard.fxml}, replaces the scene root and
+     * resizes the window. If loading fails, an error dialog is shown.
+     *
+     * @param event the originating action event, used to access the current stage
+     */
     private void goBackToAdminDashboard(ActionEvent event) {
         try {
             Parent root = FXMLLoader.load(

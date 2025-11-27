@@ -68,6 +68,8 @@ public class AdminDashboardController {
     /**
      * JavaFX initialize hook. Sets up the table and loads data.
      * Called automatically after FXML is loaded.
+     *
+     * @throws SQLException if loading customers or employees fails
      */
     @FXML
     private void initialize() throws SQLException {
@@ -112,6 +114,8 @@ public class AdminDashboardController {
     /**
      * Loads all customers & employees into the master list.
      * Replace the fetchAll* calls with whatever you actually use to load them.
+     *
+     * @throws SQLException if fetching customers or employees fails
      */
     private void populateData() throws SQLException {
         masterData.clear();
@@ -133,6 +137,9 @@ public class AdminDashboardController {
 
     /**
      * Search/filter handler – similar idea to TellerDashboard.
+     * <p>
+     * Reads the current search text and selected category and applies
+     * a predicate to the {@link #filteredData} list to update the table view.
      */
     @FXML
     private void handleSearch() {
@@ -153,6 +160,11 @@ public class AdminDashboardController {
 
     /**
      * Maps a row + category name to a string we can search on.
+     *
+     * @param record   the user record representing a row in the table
+     * @param category the search category (e.g. "Name", "Email")
+     * @return the string value from the record that corresponds to the category;
+     *         empty string if no match
      */
     private String recordValueByCategory(UserRecord record, String category) {
         if (record == null || category == null) {
@@ -177,75 +189,106 @@ public class AdminDashboardController {
     }
 
     /**
-     * Will be used to open the Manage User Role screen.
-     * For now it validates selection and gives feedback (not empty).
+     * Handles the "Manage User" action.
+     * <p>
+     * Ensures a user is selected in the table, then loads the
+     * {@code ManageUserRole.fxml} view and passes the selected {@link UserRecord}
+     * to {@link ManageUserRoleController#initializeData(AdminDashboardController.UserRecord)}.
+     *
+     * @param event the action event triggered by the "Manage User" control
      */
     @FXML
-private void handleManageUser(ActionEvent event) {
-    UserRecord selected = userTable.getSelectionModel().getSelectedItem();
-    if (selected == null) {
-        Alert alert = new Alert(Alert.AlertType.WARNING);
-        alert.setTitle("No selection");
-        alert.setHeaderText(null);
-        alert.setContentText("Please select a user from the table first.");
-        alert.showAndWait();
-        return;
+    private void handleManageUser(ActionEvent event) {
+        UserRecord selected = userTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("No selection");
+            alert.setHeaderText(null);
+            alert.setContentText("Please select a user from the table first.");
+            alert.showAndWait();
+            return;
+        }
+
+        try {
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/bank/Views/ManageUserRole.fxml"));
+            Parent root = loader.load();
+
+            ManageUserRoleController controller = loader.getController();
+            controller.initializeData(selected); // pass the selected user
+
+            Scene scene = ((Node) event.getSource()).getScene();
+            Stage stage = (Stage) scene.getWindow();
+            scene.setRoot(root);
+            stage.sizeToScene();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Error");
+            alert.setHeaderText("Unable to open Manage User Role");
+            alert.setContentText(ex.getMessage());
+            alert.showAndWait();
+        }
     }
 
-    try {
-        FXMLLoader loader = new FXMLLoader(
-                getClass().getResource("/bank/Views/ManageUserRole.fxml"));
-        Parent root = loader.load();
-
-        ManageUserRoleController controller = loader.getController();
-        controller.initializeData(selected); // pass the selected user
-
-        Scene scene = ((Node) event.getSource()).getScene();
-        Stage stage = (Stage) scene.getWindow();
-        scene.setRoot(root);
-        stage.sizeToScene();
-    } catch (IOException ex) {
-        ex.printStackTrace();
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle("Error");
-        alert.setHeaderText("Unable to open Manage User Role");
-        alert.setContentText(ex.getMessage());
-        alert.showAndWait();
-    }
-}
-
-
+    /**
+     * Handles the "View Audit Log" action.
+     * <p>
+     * Loads the {@code AuditLog.fxml} view and replaces the current scene content.
+     * If loading fails, shows an error dialog.
+     *
+     * @param event the action event triggered by the "View Audit Log" control
+     */
     @FXML
-private void handleViewAuditLog(ActionEvent event) {
-    try {
-        Parent root = FXMLLoader.load(
-                getClass().getResource("/bank/Views/AuditLog.fxml"));
-        Scene scene = ((Node) event.getSource()).getScene();
-        Stage stage = (Stage) scene.getWindow();
-        scene.setRoot(root);
-        stage.sizeToScene();
-    } catch (IOException e) {
-        e.printStackTrace();
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle("Error");
-        alert.setHeaderText("Unable to open Audit Log");
-        alert.setContentText(e.getMessage());
-        alert.showAndWait();
+    private void handleViewAuditLog(ActionEvent event) {
+        try {
+            Parent root = FXMLLoader.load(
+                    getClass().getResource("/bank/Views/AuditLog.fxml"));
+            Scene scene = ((Node) event.getSource()).getScene();
+            Stage stage = (Stage) scene.getWindow();
+            scene.setRoot(root);
+            stage.sizeToScene();
+        } catch (IOException e) {
+            e.printStackTrace();
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Error");
+            alert.setHeaderText("Unable to open Audit Log");
+            alert.setContentText(e.getMessage());
+            alert.showAndWait();
+        }
     }
-}
 
-
+    /**
+     * Handles navigation to the "Update Password & Security Question" screen.
+     *
+     * @param event the action event triggered by the corresponding control
+     */
     @FXML
     private void handleUpdatePassword(ActionEvent event) {
         switchScene(event, "/bank/Views/UpdatePasswordSecurityQuestion.fxml");
     }
 
+    /**
+     * Handles logout from the admin dashboard.
+     * <p>
+     * Clears the current session via {@link SessionManager#clear()} and
+     * returns to the login form.
+     *
+     * @param event the action event triggered by the Logout control
+     */
     @FXML
     private void handleLogout(ActionEvent event) {
         SessionManager.clear();
         switchScene(event, "/bank/Views/LoginForm.fxml");
     }
 
+    /**
+     * Utility method to switch scenes to another FXML view.
+     *
+     * @param event        the originating action event, used to access the current stage
+     * @param resourcePath the classpath to the FXML resource to load
+     * @throws RuntimeException if the FXML resource cannot be loaded
+     */
     private void switchScene(ActionEvent event, String resourcePath) {
         try {
             Parent root = FXMLLoader.load(getClass().getResource(resourcePath));
@@ -258,6 +301,12 @@ private void handleViewAuditLog(ActionEvent event) {
         }
     }
 
+    /**
+     * Returns an empty string if the provided value is {@code null}, otherwise returns it unchanged.
+     *
+     * @param value the input string which may be {@code null}
+     * @return an empty string if {@code value} is {@code null}; otherwise {@code value}
+     */
     private String safeString(String value) {
         return value == null ? "" : value;
     }
@@ -280,6 +329,21 @@ private void handleViewAuditLog(ActionEvent event) {
         private final Integer customerId;
         private final Integer employeeId;
 
+        /**
+         * Constructs a {@code UserRecord} representing either a customer or an employee.
+         *
+         * @param userId      unique ID used in the table (customer or employee ID)
+         * @param userType    "CUSTOMER" or "EMPLOYEE"
+         * @param name        full name
+         * @param email       email address
+         * @param phoneNumber phone number
+         * @param dob         date of birth
+         * @param address     postal address
+         * @param role        employee role; empty string for customers
+         * @param branchName  employee branch name; empty string for customers
+         * @param customerId  underlying customer ID, or {@code null} if this represents an employee
+         * @param employeeId  underlying employee ID, or {@code null} if this represents a customer
+         */
         private UserRecord(int userId,
                            String userType,
                            String name,
@@ -304,6 +368,12 @@ private void handleViewAuditLog(ActionEvent event) {
             this.employeeId = employeeId;
         }
 
+        /**
+         * Creates a {@code UserRecord} from a {@link Customer} model.
+         *
+         * @param c the customer instance
+         * @return a new {@code UserRecord} representing the customer
+         */
         public static UserRecord fromCustomer(Customer c) {
             return new UserRecord(
                     c.getCustomerID(),              // adjust getter names if needed
@@ -320,6 +390,12 @@ private void handleViewAuditLog(ActionEvent event) {
             );
         }
 
+        /**
+         * Creates a {@code UserRecord} from an {@link Employee} model.
+         *
+         * @param e the employee instance
+         * @return a new {@code UserRecord} representing the employee
+         */
         public static UserRecord fromEmployee(Employee e) {
             String branchName = (e.getBranch() == null)
                     ? ""
@@ -339,46 +415,101 @@ private void handleViewAuditLog(ActionEvent event) {
             );
         }
 
+        /**
+         * Returns the table user ID (customer or employee ID).
+         *
+         * @return the user ID
+         */
         public int getUserId() {
             return userId;
         }
 
+        /**
+         * Returns the user type ("CUSTOMER" or "EMPLOYEE").
+         *
+         * @return the user type
+         */
         public String getUserType() {
             return userType;
         }
 
+        /**
+         * Returns the full name of the user.
+         *
+         * @return the user name
+         */
         public String getName() {
             return name;
         }
 
+        /**
+         * Returns the email address of the user.
+         *
+         * @return the email
+         */
         public String getEmail() {
             return email;
         }
 
+        /**
+         * Returns the phone number of the user.
+         *
+         * @return the phone number
+         */
         public String getPhoneNumber() {
             return phoneNumber;
         }
 
+        /**
+         * Returns the date of birth of the user.
+         *
+         * @return the date of birth, or {@code null} if not set
+         */
         public LocalDate getDob() {
             return dob;
         }
 
+        /**
+         * Returns the address of the user.
+         *
+         * @return the address
+         */
         public String getAddress() {
             return address;
         }
 
+        /**
+         * Returns the role of the user if an employee.
+         *
+         * @return the role, or empty string if this record represents a customer
+         */
         public String getRole() {
             return role;
         }
 
+        /**
+         * Returns the branch name for the user if an employee.
+         *
+         * @return the branch name, or empty string if this record represents a customer
+         */
         public String getBranchName() {
             return branchName;
         }
 
+        /**
+         * Returns the underlying customer ID, if this record represents a customer.
+         *
+         * @return the customer ID, or {@code null} if not a customer record
+         */
         public Integer getCustomerId() {
             return customerId;
         }
 
+        /**
+         * Returns the underlying employee ID, if this record represents an employee.
+         *
+         * @return the employee ID, or {@code null} if not an employee record
+         */
         public Integer getEmployeeId() {
             return employeeId;
         }
