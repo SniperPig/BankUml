@@ -21,6 +21,10 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Controller responsible for handling deposit operations for both
+ * customer and teller views.
+ */
 public class DepositController {
 
     @FXML private TextField amountField;
@@ -32,15 +36,29 @@ public class DepositController {
     private BankDb db;
     private String parentPage; // "customer" or "teller"
 
+    /**
+     * Sets required dependencies for this controller.
+     *
+     * @param account the account the deposit will be applied to
+     * @param db the database connection handler
+     */
     public void setDependencies(Account account, BankDb db) {
         this.account = account;
         this.db = db;
     }
 
+    /**
+     * Sets which page the controller should return to after completing an action.
+     *
+     * @param parentPage a string representing the parent page ("customer" or "teller")
+     */
     public void setParentPage(String parentPage) {
         this.parentPage = parentPage;
     }
 
+    /**
+     * Initializes UI components and event handlers.
+     */
     @FXML
     public void initialize() {
         if (notificationLabel != null) notificationLabel.setText("");
@@ -48,6 +66,11 @@ public class DepositController {
         if (backLink != null) backLink.setOnAction(this::handleBack);
     }
 
+    /**
+     * Handles the deposit action when the confirm button is pressed.
+     *
+     * @param event the action event triggered by the user
+     */
     @FXML
     private void handleDeposit(ActionEvent event) {
         double amount;
@@ -70,7 +93,8 @@ public class DepositController {
             db.transactionDeposit(account.getAccountId(), amount, "CUSTOMER", account.getCustomerId());
 
             // Get last transaction ID
-            List<Map<String, Object>> lastTx = db.transactionGetRecentByAccount(account.getAccountId(), 1);
+            List<Map<String, Object>> lastTx =
+                    db.transactionGetRecentByAccount(account.getAccountId(), 1);
             long transactionId = (Long) lastTx.get(0).get("transaction_id");
 
             account.setBalance(account.getBalance() + amount);
@@ -97,12 +121,17 @@ public class DepositController {
         }
     }
 
+    /**
+     * Navigates back to either the customer or teller dashboard.
+     *
+     * @param event the event triggered by clicking the back link
+     */
     @FXML
     private void handleBack(ActionEvent event) {
         try {
-            String path = "customer".equals(parentPage) ?
-                    "/bank/Views/CustomerDashboard.fxml" :
-                    "/bank/Views/TellerDashboard.fxml";
+            String path = "customer".equals(parentPage)
+                    ? "/bank/Views/CustomerDashboard.fxml"
+                    : "/bank/Views/TellerDashboard.fxml";
 
             FXMLLoader loader = new FXMLLoader(getClass().getResource(path));
             Parent root = loader.load();
