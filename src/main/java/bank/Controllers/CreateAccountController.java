@@ -23,8 +23,12 @@ import java.util.regex.Pattern;
 
 /**
  * Controller for CreateAccountForm.fxml.
- *
- * Handles input validation, account creation, and DB interaction.
+ * <p>
+ * Handles all logic associated with creating a new customer account, including:
+ * <ul>
+ *     <li>Validating all form inputs</li>
+ *     <li>Creating the customer in the database</li>
+ * </ul>
  */
 public class CreateAccountController {
 
@@ -68,7 +72,12 @@ public class CreateAccountController {
     private final BankDb db = new BankDb();
 
     /**
-     * Initializes dropdown values when the FXML loads.
+     * Initializes the view by loading:
+     * <ul>
+     *     <li>Security questions</li>
+     *     <li>All branches from the database</li>
+     * </ul>
+     * This method is automatically invoked by JavaFX once the FXML elements load.
      */
     @FXML
     public void initialize() {
@@ -96,6 +105,18 @@ public class CreateAccountController {
 
     /**
      * Handles the Create Account button.
+     * <p>
+     * Steps performed:
+     * <ol>
+     *     <li>Validate all fields</li>
+     *     <li>Fetch logged-in employee from the session</li>
+     *     <li>Create a new customer record</li>
+     *     <li>Create a SAVING and CHECKING account for the customer</li>
+     *     <li>Show a confirmation dialog</li>
+     *     <li>Redirect to the teller dashboard</li>
+     * </ol>
+     *
+     * @param event action event
      */
 @FXML
 private void handleCreate(javafx.event.ActionEvent event) {
@@ -200,20 +221,32 @@ private void handleCreate(javafx.event.ActionEvent event) {
 
     
     /**
-     * Cancels and closes the window.
+     * Handles the Cancel button.
+     * Closes the current Create Account window.
      */
     @FXML
     private void handleCancel() {
         closeWindow();
     }
 
+    /**
+     * Closes the window associated with the form.
+     */
     private void closeWindow() {
         Stage stage = (Stage) nameField.getScene().getWindow();
         stage.close();
     }
 
     /**
-     * Validates all input fields.
+     * Validates all form input fields.
+     * <p>
+     * Does the following:
+     * <ul>
+     *     <li>Non-empty checks</li>
+     *     <li>Regex validation for each field</li>
+     * </ul>
+     *
+     * @return {@code true} if all fields are valid; {@code false} otherwise.
      */
     private boolean validate() {
         // --------- Basic "not empty" checks ----------
@@ -291,9 +324,10 @@ private void handleCreate(javafx.event.ActionEvent event) {
         return true;
     }
 
-        /**
-     * "Back to Home" under the title – just closes this window
-     * and returns the user to the Teller dashboard behind it.
+    /**
+     * Returns the user back to the Login Form.
+     *
+     * @param event Event triggered by clicking "Back to Home"
      */
     @FXML
     private void handleBackToHome(ActionEvent event) {
@@ -301,8 +335,9 @@ private void handleCreate(javafx.event.ActionEvent event) {
     }
 
     /**
-     * Logout hyperlink at the bottom-right.
-     * Sends the user back to the LoginForm.
+     * Logs the user out by clearing the session and returning to Login.
+     *
+     * @param event Event triggered by clicking the Logout hyperlink
      */
     @FXML
     private void handleLogout(ActionEvent event) {
@@ -311,7 +346,10 @@ private void handleCreate(javafx.event.ActionEvent event) {
     }
 
     /**
-     * Generic helper for swapping scenes, same pattern as other controllers.
+     * Utility method to change scenes inside the same window.
+     *
+     * @param event         action event
+     * @param resourcePath  the FXML resource to load
      */
     private void switchScene(ActionEvent event, String resourcePath) {
         try {
@@ -325,13 +363,22 @@ private void handleCreate(javafx.event.ActionEvent event) {
         }
     }
 
-    // UI Helpers
+    /**
+     * Displays an error popup.
+     *
+     * @param msg the message to show to the user
+     */
     private void showError(String msg) {
         Alert a = new Alert(Alert.AlertType.ERROR);
         a.setContentText(msg);
         a.show();
     }
-
+    
+    /**
+     * Displays an informational popup.
+     *
+     * @param msg the message to show
+     */
     private void showInfo(String msg) {
         Alert a = new Alert(Alert.AlertType.INFORMATION);
         a.setContentText(msg);
