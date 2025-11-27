@@ -159,7 +159,7 @@ public class TransferController {
 
             Scene scene = ((Node) event.getSource()).getScene();
             Stage stage = (Stage) scene.getWindow();
-            stage.setScene(new Scene(root));
+            scene.setRoot(root);
             stage.sizeToScene();
 
         } catch (Exception e) {
