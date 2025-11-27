@@ -60,7 +60,7 @@ public class CreateAccountController {
             Pattern.compile("^[A-Za-z0-9]+$");            // letters + digits only
 
     private static final Pattern ADDRESS_PATTERN =
-            Pattern.compile("^\\d{3,5}\\s+[A-Za-z0-9\\s]+$");
+            Pattern.compile("^\\d{1,5}\\s+[A-Za-z0-9\\s]+$");
     // 3–5 digits, space, then street name
 
     private static final Pattern PASSWORD_PATTERN =
