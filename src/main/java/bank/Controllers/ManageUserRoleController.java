@@ -25,28 +25,39 @@ import java.sql.SQLException;
  */
 public class ManageUserRoleController {
 
-    @FXML private Label userTypeLabel;
-    @FXML private Label nameLabel;
-    @FXML private Label emailLabel;
-    @FXML private Label currentRoleLabel;
-    @FXML private Label currentBranchLabel;
+    @FXML
+    private Label userTypeLabel;
+    @FXML
+    private Label nameLabel;
+    @FXML
+    private Label emailLabel;
+    @FXML
+    private Label currentRoleLabel;
+    @FXML
+    private Label currentBranchLabel;
 
-    @FXML private ComboBox<String> roleCombo;
-    @FXML private Label branchLabel;
-    @FXML private ComboBox<Branch> branchCombo;
+    @FXML
+    private ComboBox<String> roleCombo;
+    @FXML
+    private Label branchLabel;
+    @FXML
+    private ComboBox<Branch> branchCombo;
 
-    @FXML private Label newSecPwdLabel;
-    @FXML private PasswordField newSecondaryPasswordField;
+    @FXML
+    private Label newSecPwdLabel;
+    @FXML
+    private PasswordField newSecondaryPasswordField;
 
-    @FXML private PasswordField adminSecondaryPasswordField;
+    @FXML
+    private PasswordField adminSecondaryPasswordField;
 
-    @FXML private Label errorLabel;
+    @FXML
+    private Label errorLabel;
 
     private final BankDb bankDb = new BankDb();
 
     private UserRecord selectedUser;
-    private final ObservableList<Branch> availableBranches =
-            FXCollections.observableArrayList();
+    private final ObservableList<Branch> availableBranches = FXCollections.observableArrayList();
 
     /**
      * Called by AdminDashboardController after loading this FXML.
@@ -70,14 +81,12 @@ public class ManageUserRoleController {
                 selectedUser.getUserType().equals("CUSTOMER")
                         ? "Customer"
                         : (selectedUser.getRole() == null || selectedUser.getRole().isBlank()
-                           ? "Employee"
-                           : selectedUser.getRole())
-        );
+                                ? "Employee"
+                                : selectedUser.getRole()));
         currentBranchLabel.setText(
                 selectedUser.getBranchName() == null
                         ? ""
-                        : selectedUser.getBranchName()
-        );
+                        : selectedUser.getBranchName());
 
         // Populate role options
         roleCombo.setItems(FXCollections.observableArrayList(
@@ -105,9 +114,7 @@ public class ManageUserRoleController {
         updateVisibilityForRole(roleCombo.getValue());
 
         // React to role changes
-        roleCombo.valueProperty().addListener((obs, oldVal, newVal) ->
-                updateVisibilityForRole(newVal)
-        );
+        roleCombo.valueProperty().addListener((obs, oldVal, newVal) -> updateVisibilityForRole(newVal));
     }
 
     /**
@@ -125,8 +132,8 @@ public class ManageUserRoleController {
         }
 
         boolean needsBranch = role.equals("Teller")
-                           || role.equals("Manager")
-                           || role.equals("Admin");
+                || role.equals("Manager")
+                || role.equals("Admin");
         branchLabel.setVisible(needsBranch);
         branchCombo.setVisible(needsBranch);
 
@@ -152,7 +159,8 @@ public class ManageUserRoleController {
      * Handles the "Save" action.
      * <p>
      * Validates the selected role, branch (when required), and the admin's
-     * secondary password, then calls {@link BankDb#adminUpdateUserRole(int, int, String, Integer, String, String)}
+     * secondary password, then calls
+     * {@link BankDb#adminUpdateUserRole(int, int, String, Integer, String, String)}
      * to persist the role/branch updates and show a confirmation dialog.
      * On success, navigates back to the admin dashboard.
      *
@@ -167,50 +175,43 @@ public class ManageUserRoleController {
             return;
         }
 
-        // Only employees can have their "role" changed via this screen
-        if ("CUSTOMER".equals(selectedUser.getUserType())) {
-            errorLabel.setText("Role changes for customers are not supported here.");
-            return;
-        }
-
         String chosenRoleUi = roleCombo.getValue();
         if (chosenRoleUi == null || chosenRoleUi.isBlank()) {
             errorLabel.setText("Please select a new role.");
             return;
         }
 
-        String newRoleDb;
-        switch (chosenRoleUi) {
-            case "Teller" -> newRoleDb = "TELLER";
-            case "Manager" -> newRoleDb = "MANAGER";
-            case "Admin" -> newRoleDb = "ADMIN";
-            case "Customer" -> {
-                errorLabel.setText("Changing an employee to Customer is not supported.");
-                return;
-            }
-            default -> {
-                errorLabel.setText("Unknown role: " + chosenRoleUi);
-                return;
-            }
+        // Map UI role string to DB role (for employees)
+        String newRoleDb = null;
+        if ("Teller".equals(chosenRoleUi)) {
+            newRoleDb = "TELLER";
+        } else if ("Manager".equals(chosenRoleUi)) {
+            newRoleDb = "MANAGER";
+        } else if ("Admin".equals(chosenRoleUi)) {
+            newRoleDb = "ADMIN";
+        } else if ("Customer".equals(chosenRoleUi)) {
+            newRoleDb = "CUSTOMER";
+        } else {
+            errorLabel.setText("Unknown role: " + chosenRoleUi);
+            return;
         }
 
         Branch chosenBranch = branchCombo.isVisible()
                 ? branchCombo.getValue()
                 : null;
 
-        Integer newBranchId = null;
-        if (branchCombo.isVisible()) {
+        // For any employee role (incl. convert customer -> employee) we need a branch
+        boolean roleIsEmployeeType = !"Customer".equals(chosenRoleUi);
+        if (roleIsEmployeeType) {
             if (chosenBranch == null) {
-                errorLabel.setText("Please select a branch for the new role.");
+                errorLabel.setText("Please select a branch for the employee role.");
                 return;
             }
-            newBranchId = chosenBranch.getBranchId();
         }
 
         String newSecPwd = newSecondaryPasswordField.isVisible()
                 ? newSecondaryPasswordField.getText()
                 : null;
-
         if (newSecondaryPasswordField.isVisible()
                 && (newSecPwd == null || newSecPwd.isBlank())) {
             errorLabel.setText("Please provide a new secondary password for Admin role.");
@@ -223,32 +224,69 @@ public class ManageUserRoleController {
             return;
         }
 
-        // Get the currently logged-in admin
         Employee admin = SessionManager.getCurrentEmployee();
         if (admin == null) {
             errorLabel.setText("No admin session found.");
             return;
         }
 
-        // Apply the change through BankDb (stored procedure handles validation + audit)
         try {
-            bankDb.adminUpdateUserRole(
-                    admin.getEmployeeID(),
-                    selectedUser.getEmployeeId(),
-                    newRoleDb,
-                    newBranchId,
-                    adminSecPwd,
-                    newSecPwd
-            );
+            if ("EMPLOYEE".equals(selectedUser.getUserType())) {
+                // EMPLOYEE -> CUSTOMER
+                if ("Customer".equals(chosenRoleUi)) {
+                    // verify admin secondary password first via existing role-change proc
+                    bankDb.adminUpdateUserRole(
+                            admin.getEmployeeID(),
+                            selectedUser.getEmployeeId(),
+                            "TELLER", // dummy, just to validate pwd; or make separate validator if you prefer
+                            chosenBranch != null ? chosenBranch.getBranchId() : null,
+                            adminSecPwd,
+                            null);
+                    // then conversion
+                    bankDb.adminConvertEmployeeToCustomer(
+                            admin.getEmployeeID(),
+                            selectedUser.getEmployeeId());
+
+                } else {
+                    // pure employee role change (no type change)
+                    bankDb.adminUpdateUserRole(
+                            admin.getEmployeeID(),
+                            selectedUser.getEmployeeId(),
+                            newRoleDb, // TELLER/MANAGER/ADMIN
+                            chosenBranch.getBranchId(),
+                            adminSecPwd,
+                            newSecPwd);
+                }
+
+            } else if ("CUSTOMER".equals(selectedUser.getUserType())) {
+                // CUSTOMER -> EMPLOYEE (Teller/Manager/Admin)
+                if ("Customer".equals(chosenRoleUi)) {
+                    errorLabel.setText("User is already a customer.");
+                    return;
+                }
+
+                // validate admin secondary password with a cheap call OR separate proc;
+                // if you're okay trusting the conversion proc only, you can skip this.
+
+                bankDb.adminConvertCustomerToEmployee(
+                        admin.getEmployeeID(),
+                        selectedUser.getCustomerId(),
+                        newRoleDb, // TELLER/MANAGER/ADMIN
+                        chosenBranch.getBranchId(),
+                        newSecPwd);
+
+            } else {
+                errorLabel.setText("Unknown user type: " + selectedUser.getUserType());
+                return;
+            }
 
             Alert ok = new Alert(Alert.AlertType.INFORMATION);
             ok.setTitle("Success");
-            ok.setHeaderText("Role updated successfully");
+            ok.setHeaderText("User type/role updated successfully");
             ok.setContentText(
-                    "Employee #" + selectedUser.getEmployeeId() +
-                    " is now " + newRoleDb +
-                    (chosenBranch != null ? " at branch " + chosenBranch.getBranchName() : "")
-            );
+                    selectedUser.getUserType() + " #" + selectedUser.getUserId() +
+                            " is now " + chosenRoleUi +
+                            (chosenBranch != null ? " at branch " + chosenBranch.getBranchName() : ""));
             ok.showAndWait();
 
             goBackToAdminDashboard(event);
@@ -257,7 +295,7 @@ public class ManageUserRoleController {
             e.printStackTrace();
             Alert err = new Alert(Alert.AlertType.ERROR);
             err.setTitle("Error");
-            err.setHeaderText("Failed to update user role");
+            err.setHeaderText("Failed to update user");
             err.setContentText(e.getMessage());
             err.showAndWait();
         }

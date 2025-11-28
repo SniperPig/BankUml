@@ -16,24 +16,28 @@ import bank.Models.Branch;
  * accounts, transactions, audit, reporting, and branch lookup).
  * All methods open and close their own connections via {@link DbManager}.
  */
-public class BankDb {    
+public class BankDb {
 
-    /* =========================================================
-       A) SECURITY & AUTHENTICATION
-       ========================================================= */
+    /*
+     * =========================================================
+     * A) SECURITY & AUTHENTICATION
+     * =========================================================
+     */
 
     /**
      * Attempts to authenticate a customer using their email and password hash.
      *
-     * @param email         customer email (username)
-     * @param passwordHash  hash of the provided password
-     * @return a list of rows returned by {@code sp_customer_login}, usually containing
-     *         customer information if authentication succeeds; empty list if it fails
+     * @param email        customer email (username)
+     * @param passwordHash hash of the provided password
+     * @return a list of rows returned by {@code sp_customer_login}, usually
+     *         containing
+     *         customer information if authentication succeeds; empty list if it
+     *         fails
      * @throws SQLException if a database access error occurs
      */
     public List<Map<String, Object>> customerLogin(String email, String passwordHash) throws SQLException {
         try (Connection conn = DbManager.getConnection();
-             CallableStatement stmt = conn.prepareCall("{CALL sp_customer_login(?,?)}")) {
+                CallableStatement stmt = conn.prepareCall("{CALL sp_customer_login(?,?)}")) {
 
             stmt.setString(1, email);
             stmt.setString(2, passwordHash);
@@ -51,15 +55,17 @@ public class BankDb {
     /**
      * Attempts to authenticate an employee using their email and password hash.
      *
-     * @param email         employee email (username)
-     * @param passwordHash  hash of the provided password
-     * @return a list of rows returned by {@code sp_employee_login}, usually containing
-     *         employee information if authentication succeeds; empty list if it fails
+     * @param email        employee email (username)
+     * @param passwordHash hash of the provided password
+     * @return a list of rows returned by {@code sp_employee_login}, usually
+     *         containing
+     *         employee information if authentication succeeds; empty list if it
+     *         fails
      * @throws SQLException if a database access error occurs
      */
     public List<Map<String, Object>> employeeLogin(String email, String passwordHash) throws SQLException {
         try (Connection conn = DbManager.getConnection();
-             CallableStatement stmt = conn.prepareCall("{CALL sp_employee_login(?,?)}")) {
+                CallableStatement stmt = conn.prepareCall("{CALL sp_employee_login(?,?)}")) {
 
             stmt.setString(1, email);
             stmt.setString(2, passwordHash);
@@ -85,7 +91,7 @@ public class BankDb {
     public void customerChangePassword(int customerId, String oldPasswordHash, String newPasswordHash)
             throws SQLException {
         try (Connection conn = DbManager.getConnection();
-             CallableStatement stmt = conn.prepareCall("{CALL sp_customer_change_password(?,?,?)}")) {
+                CallableStatement stmt = conn.prepareCall("{CALL sp_customer_change_password(?,?,?)}")) {
 
             stmt.setInt(1, customerId);
             stmt.setString(2, oldPasswordHash);
@@ -105,7 +111,7 @@ public class BankDb {
     public void employeeChangePassword(int employeeId, String oldPasswordHash, String newPasswordHash)
             throws SQLException {
         try (Connection conn = DbManager.getConnection();
-             CallableStatement stmt = conn.prepareCall("{CALL sp_employee_change_password(?,?,?)}")) {
+                CallableStatement stmt = conn.prepareCall("{CALL sp_employee_change_password(?,?,?)}")) {
 
             stmt.setInt(1, employeeId);
             stmt.setString(2, oldPasswordHash);
@@ -125,7 +131,7 @@ public class BankDb {
     public void customerResetPassword(int customerId, String securityAnswerHash, String newPasswordHash)
             throws SQLException {
         try (Connection conn = DbManager.getConnection();
-             CallableStatement stmt = conn.prepareCall("{CALL sp_customer_reset_password(?,?,?)}")) {
+                CallableStatement stmt = conn.prepareCall("{CALL sp_customer_reset_password(?,?,?)}")) {
 
             stmt.setInt(1, customerId);
             stmt.setString(2, securityAnswerHash);
@@ -145,7 +151,7 @@ public class BankDb {
     public void employeeResetPassword(int employeeId, String securityAnswerHash, String newPasswordHash)
             throws SQLException {
         try (Connection conn = DbManager.getConnection();
-             CallableStatement stmt = conn.prepareCall("{CALL sp_employee_reset_password(?,?,?)}")) {
+                CallableStatement stmt = conn.prepareCall("{CALL sp_employee_reset_password(?,?,?)}")) {
 
             stmt.setInt(1, employeeId);
             stmt.setString(2, securityAnswerHash);
@@ -154,25 +160,26 @@ public class BankDb {
         }
     }
 
-
-    /* =========================================================
-       B) CUSTOMER MANAGEMENT
-       ========================================================= */
+    /*
+     * =========================================================
+     * B) CUSTOMER MANAGEMENT
+     * =========================================================
+     */
 
     /**
      * Creates a new customer and returns the generated customer ID.
      *
-     * @param actorEmployeeId  employee performing the operation (for audit)
-     * @param branchId         branch where the customer is registered
-     * @param name             customer full name
-     * @param email            customer email
-     * @param phone            customer phone number
-     * @param dob              date of birth
-     * @param governmentId     government ID / identifier
-     * @param address          customer address
-     * @param passwordHash     hash of the customer's password
-     * @param secQuestion      security question text
-     * @param secAnswerHash    hash of the security answer
+     * @param actorEmployeeId employee performing the operation (for audit)
+     * @param branchId        branch where the customer is registered
+     * @param name            customer full name
+     * @param email           customer email
+     * @param phone           customer phone number
+     * @param dob             date of birth
+     * @param governmentId    government ID / identifier
+     * @param address         customer address
+     * @param passwordHash    hash of the customer's password
+     * @param secQuestion     security question text
+     * @param secAnswerHash   hash of the security answer
      * @return the newly created {@code customer_id}
      * @throws SQLException if the stored procedure fails or does not return an ID
      */
@@ -187,10 +194,9 @@ public class BankDb {
             String address,
             String passwordHash,
             String secQuestion,
-            String secAnswerHash
-    ) throws SQLException {
+            String secAnswerHash) throws SQLException {
         try (Connection conn = DbManager.getConnection();
-             CallableStatement stmt = conn.prepareCall("{CALL sp_customer_create(?,?,?,?,?,?,?,?,?,?,?)}")) {
+                CallableStatement stmt = conn.prepareCall("{CALL sp_customer_create(?,?,?,?,?,?,?,?,?,?,?)}")) {
 
             stmt.setInt(1, actorEmployeeId);
             stmt.setInt(2, branchId);
@@ -239,10 +245,9 @@ public class BankDb {
             String phone,
             Date dob,
             String governmentId,
-            String address
-    ) throws SQLException {
+            String address) throws SQLException {
         try (Connection conn = DbManager.getConnection();
-             CallableStatement stmt = conn.prepareCall("{CALL sp_customer_update(?,?,?,?,?,?,?,?,?)}")) {
+                CallableStatement stmt = conn.prepareCall("{CALL sp_customer_update(?,?,?,?,?,?,?,?,?)}")) {
 
             stmt.setInt(1, actorEmployeeId);
             stmt.setInt(2, customerId);
@@ -266,7 +271,7 @@ public class BankDb {
      */
     public void customerDeactivate(int actorEmployeeId, int customerId) throws SQLException {
         try (Connection conn = DbManager.getConnection();
-             CallableStatement stmt = conn.prepareCall("{CALL sp_customer_deactivate(?,?)}")) {
+                CallableStatement stmt = conn.prepareCall("{CALL sp_customer_deactivate(?,?)}")) {
 
             stmt.setInt(1, actorEmployeeId);
             stmt.setInt(2, customerId);
@@ -283,7 +288,7 @@ public class BankDb {
      */
     public void customerReactivate(int actorEmployeeId, int customerId) throws SQLException {
         try (Connection conn = DbManager.getConnection();
-             CallableStatement stmt = conn.prepareCall("{CALL sp_customer_reactivate(?,?)}")) {
+                CallableStatement stmt = conn.prepareCall("{CALL sp_customer_reactivate(?,?)}")) {
 
             stmt.setInt(1, actorEmployeeId);
             stmt.setInt(2, customerId);
@@ -300,7 +305,7 @@ public class BankDb {
      */
     public List<Map<String, Object>> customerGetById(int customerId) throws SQLException {
         try (Connection conn = DbManager.getConnection();
-             CallableStatement stmt = conn.prepareCall("{CALL sp_customer_get_by_id(?)}")) {
+                CallableStatement stmt = conn.prepareCall("{CALL sp_customer_get_by_id(?)}")) {
 
             stmt.setInt(1, customerId);
             boolean hasResult = stmt.execute();
@@ -313,21 +318,20 @@ public class BankDb {
         }
     }
 
-
     /**
      * Fetches customers by email. Returns empty list if none found.
      */
     public List<Map<String, Object>> customerGetByEmail(String email) throws SQLException {
         String sql = """
-            SELECT customer_id, customer_name, customer_email, customer_phone,
-                dob, government_id, customer_address, password_hash,
-                security_question, security_answer_hash
-            FROM customer
-            WHERE customer_email = ?
-        """;
+                    SELECT customer_id, customer_name, customer_email, customer_phone,
+                        dob, government_id, customer_address, password_hash,
+                        security_question, security_answer_hash
+                    FROM customer
+                    WHERE customer_email = ?
+                """;
 
         try (Connection conn = DbManager.getConnection();
-            PreparedStatement stmt = conn.prepareStatement(sql)) {
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setString(1, email);
             try (ResultSet rs = stmt.executeQuery()) {
@@ -342,15 +346,15 @@ public class BankDb {
      */
     public List<Map<String, Object>> fetchAllCustomers() throws SQLException {
         String sql = """
-            SELECT customer_id, customer_name, customer_email, customer_phone,
-                dob, government_id, customer_address, password_hash,
-                security_question, security_answer_hash
-            FROM customer
-        """;
+                    SELECT customer_id, customer_name, customer_email, customer_phone,
+                        dob, government_id, customer_address, password_hash,
+                        security_question, security_answer_hash
+                    FROM customer
+                """;
 
         try (Connection conn = DbManager.getConnection();
-            PreparedStatement stmt = conn.prepareStatement(sql);
-            ResultSet rs = stmt.executeQuery()) {
+                PreparedStatement stmt = conn.prepareStatement(sql);
+                ResultSet rs = stmt.executeQuery()) {
 
             return ResultSetUtils.toList(rs);
         }
@@ -363,7 +367,7 @@ public class BankDb {
      */
     public List<Map<String, Object>> customerSearchAll(String query) throws SQLException {
         try (Connection conn = DbManager.getConnection();
-            CallableStatement stmt = conn.prepareCall("{CALL sp_customer_search_all(?)}")) {
+                CallableStatement stmt = conn.prepareCall("{CALL sp_customer_search_all(?)}")) {
 
             stmt.setString(1, query == null ? "" : query.trim());
             boolean hasResult = stmt.execute();
@@ -374,7 +378,7 @@ public class BankDb {
             }
             return Collections.emptyList();
         }
-    }   
+    }
 
     /**
      * Searches for customers within a specific branch using a text query.
@@ -386,7 +390,7 @@ public class BankDb {
      */
     public List<Map<String, Object>> customerSearch(int branchId, String query) throws SQLException {
         try (Connection conn = DbManager.getConnection();
-             CallableStatement stmt = conn.prepareCall("{CALL sp_customer_search(?,?)}")) {
+                CallableStatement stmt = conn.prepareCall("{CALL sp_customer_search(?,?)}")) {
 
             stmt.setInt(1, branchId);
             stmt.setString(2, query);
@@ -400,26 +404,28 @@ public class BankDb {
         }
     }
 
-
-    /* =========================================================
-       C) EMPLOYEE & ROLE MANAGEMENT
-       ========================================================= */
+    /*
+     * =========================================================
+     * C) EMPLOYEE & ROLE MANAGEMENT
+     * =========================================================
+     */
 
     /**
      * Creates a new employee and returns the generated employee ID.
      *
-     * @param actorAdminId                admin performing the creation
-     * @param branchId                    branch where the employee will work
-     * @param name                        employee name
-     * @param email                       employee email
-     * @param phone                       employee phone number
-     * @param dob                         employee date of birth
-     * @param address                     employee address
-     * @param role                        role string (e.g. "TELLER", "MANAGER", "ADMIN")
-     * @param passwordHash                hash of employee's primary password
-     * @param secQuestion                 security question text
-     * @param secAnswerHash               hash of the security answer
-     * @param adminSecondaryPassword      plain text secondary password if new ADMIN, else {@code null}
+     * @param actorAdminId           admin performing the creation
+     * @param branchId               branch where the employee will work
+     * @param name                   employee name
+     * @param email                  employee email
+     * @param phone                  employee phone number
+     * @param dob                    employee date of birth
+     * @param address                employee address
+     * @param role                   role string (e.g. "TELLER", "MANAGER", "ADMIN")
+     * @param passwordHash           hash of employee's primary password
+     * @param secQuestion            security question text
+     * @param secAnswerHash          hash of the security answer
+     * @param adminSecondaryPassword plain text secondary password if new ADMIN,
+     *                               else {@code null}
      * @return the newly created {@code employee_id}
      * @throws SQLException if the stored procedure fails or does not return an ID
      */
@@ -438,7 +444,7 @@ public class BankDb {
             String adminSecondaryPassword // null if not ADMIN
     ) throws SQLException {
         try (Connection conn = DbManager.getConnection();
-             CallableStatement stmt = conn.prepareCall("{CALL sp_employee_create(?,?,?,?,?,?,?,?,?,?,?,?)}")) {
+                CallableStatement stmt = conn.prepareCall("{CALL sp_employee_create(?,?,?,?,?,?,?,?,?,?,?,?)}")) {
 
             stmt.setInt(1, actorAdminId);
             stmt.setInt(2, branchId);
@@ -488,10 +494,9 @@ public class BankDb {
             String phone,
             Date dob,
             String address,
-            String role
-    ) throws SQLException {
+            String role) throws SQLException {
         try (Connection conn = DbManager.getConnection();
-             CallableStatement stmt = conn.prepareCall("{CALL sp_employee_update(?,?,?,?,?,?,?,?,?)}")) {
+                CallableStatement stmt = conn.prepareCall("{CALL sp_employee_update(?,?,?,?,?,?,?,?,?)}")) {
 
             stmt.setInt(1, actorAdminId);
             stmt.setInt(2, employeeId);
@@ -516,7 +521,7 @@ public class BankDb {
      */
     public void employeeChangeRole(int actorAdminId, int employeeId, String newRole) throws SQLException {
         try (Connection conn = DbManager.getConnection();
-             CallableStatement stmt = conn.prepareCall("{CALL sp_employee_change_role(?,?,?)}")) {
+                CallableStatement stmt = conn.prepareCall("{CALL sp_employee_change_role(?,?,?)}")) {
 
             stmt.setInt(1, actorAdminId);
             stmt.setInt(2, employeeId);
@@ -534,7 +539,7 @@ public class BankDb {
      */
     public void employeeDeactivate(int actorAdminId, int employeeId) throws SQLException {
         try (Connection conn = DbManager.getConnection();
-             CallableStatement stmt = conn.prepareCall("{CALL sp_employee_deactivate(?,?)}")) {
+                CallableStatement stmt = conn.prepareCall("{CALL sp_employee_deactivate(?,?)}")) {
 
             stmt.setInt(1, actorAdminId);
             stmt.setInt(2, employeeId);
@@ -551,7 +556,7 @@ public class BankDb {
      */
     public void employeeReactivate(int actorAdminId, int employeeId) throws SQLException {
         try (Connection conn = DbManager.getConnection();
-             CallableStatement stmt = conn.prepareCall("{CALL sp_employee_reactivate(?,?)}")) {
+                CallableStatement stmt = conn.prepareCall("{CALL sp_employee_reactivate(?,?)}")) {
 
             stmt.setInt(1, actorAdminId);
             stmt.setInt(2, employeeId);
@@ -561,13 +566,14 @@ public class BankDb {
 
     /**
      * Fetches the employee from the database with the given employeeId.
+     * 
      * @param employeeId the ID of the employee to fetch
      * @return List of rows with employee info.
      * @throws SQLException if database error occurs.
      */
     public List<Map<String, Object>> employeeGetById(int employeeId) throws SQLException {
         try (Connection conn = DbManager.getConnection();
-             CallableStatement stmt = conn.prepareCall("{CALL sp_employee_get_by_id(?)}")) {
+                CallableStatement stmt = conn.prepareCall("{CALL sp_employee_get_by_id(?)}")) {
 
             stmt.setInt(1, employeeId);
             boolean hasResult = stmt.execute();
@@ -582,14 +588,15 @@ public class BankDb {
 
     /**
      * Fetches the employee from the database with the given email.
+     * 
      * @param email the email of the employee to fetch
      * @return List of rows with employee info.
      * @throws SQLException if database error occurs.
      */
     public List<Map<String, Object>> employeeGetByEmail(String email) throws SQLException {
         try (Connection conn = DbManager.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(
-                     "SELECT * FROM employee WHERE employee_email = ?")) {
+                PreparedStatement stmt = conn.prepareStatement(
+                        "SELECT * FROM employee WHERE employee_email = ?")) {
 
             stmt.setString(1, email);
             try (ResultSet rs = stmt.executeQuery()) {
@@ -608,7 +615,7 @@ public class BankDb {
      */
     public List<Map<String, Object>> employeeListByBranch(int branchId) throws SQLException {
         try (Connection conn = DbManager.getConnection();
-             CallableStatement stmt = conn.prepareCall("{CALL sp_employee_list_by_branch(?)}")) {
+                CallableStatement stmt = conn.prepareCall("{CALL sp_employee_list_by_branch(?)}")) {
 
             stmt.setInt(1, branchId);
             boolean hasResult = stmt.execute();
@@ -622,29 +629,31 @@ public class BankDb {
     }
 
     /**
-     * Fetches all employees in the database no matter the branch.  
-     * @return List of rows with employee info. 
+     * Fetches all employees in the database no matter the branch.
+     * 
+     * @return List of rows with employee info.
      * @throws SQLException if database error occurs.
      */
     public List<Map<String, Object>> getAllEmployee() throws SQLException {
         String sql = """
-            SELECT employee_id, employee_name, employee_email, employee_phone,
-                dob, employee_address, role, branch_id
-            FROM employee
-        """;
+                    SELECT employee_id, employee_name, employee_email, employee_phone,
+                        dob, employee_address, role, branch_id
+                    FROM employee
+                """;
 
         try (Connection conn = DbManager.getConnection();
-            PreparedStatement stmt = conn.prepareStatement(sql);
-            ResultSet rs = stmt.executeQuery()) {
+                PreparedStatement stmt = conn.prepareStatement(sql);
+                ResultSet rs = stmt.executeQuery()) {
 
             return ResultSetUtils.toList(rs);
         }
     }
 
-
-    /* =========================================================
-       D) ACCOUNT MANAGEMENT
-       ========================================================= */
+    /*
+     * =========================================================
+     * D) ACCOUNT MANAGEMENT
+     * =========================================================
+     */
 
     /**
      * Opens a new account for a given customer and returns basic account info.
@@ -657,7 +666,8 @@ public class BankDb {
      * @param interestRate     interest rate for savings accounts (nullable)
      * @param chequebookNumber chequebook number if applicable (nullable)
      * @param bankCode         bank code for external reference (nullable)
-     * @return a single row containing account info (e.g., account_id, account_number)
+     * @return a single row containing account info (e.g., account_id,
+     *         account_number)
      * @throws SQLException if the stored procedure fails or returns no data
      */
     public Map<String, Object> accountOpen(
@@ -668,10 +678,9 @@ public class BankDb {
             double initialBalance,
             Double interestRate,
             String chequebookNumber,
-            String bankCode
-    ) throws SQLException {
+            String bankCode) throws SQLException {
         try (Connection conn = DbManager.getConnection();
-             CallableStatement stmt = conn.prepareCall("{CALL sp_account_open(?,?,?,?,?,?,?,?)}")) {
+                CallableStatement stmt = conn.prepareCall("{CALL sp_account_open(?,?,?,?,?,?,?,?)}")) {
 
             stmt.setInt(1, actorEmployeeId);
             stmt.setInt(2, customerId);
@@ -719,7 +728,7 @@ public class BankDb {
      */
     public List<Map<String, Object>> accountGetById(int accountId) throws SQLException {
         try (Connection conn = DbManager.getConnection();
-             CallableStatement stmt = conn.prepareCall("{CALL sp_account_get_by_id(?)}")) {
+                CallableStatement stmt = conn.prepareCall("{CALL sp_account_get_by_id(?)}")) {
 
             stmt.setInt(1, accountId);
             boolean hasResult = stmt.execute();
@@ -741,7 +750,7 @@ public class BankDb {
      */
     public List<Map<String, Object>> accountListByCustomer(int customerId) throws SQLException {
         try (Connection conn = DbManager.getConnection();
-             CallableStatement stmt = conn.prepareCall("{CALL sp_account_list_by_customer(?)}")) {
+                CallableStatement stmt = conn.prepareCall("{CALL sp_account_list_by_customer(?)}")) {
 
             stmt.setInt(1, customerId);
             boolean hasResult = stmt.execute();
@@ -765,7 +774,7 @@ public class BankDb {
      */
     public List<Map<String, Object>> accountOverviewForCustomer(int customerId) throws SQLException {
         try (Connection conn = DbManager.getConnection();
-             CallableStatement stmt = conn.prepareCall("{CALL sp_account_get_overview_for_customer(?)}")) {
+                CallableStatement stmt = conn.prepareCall("{CALL sp_account_get_overview_for_customer(?)}")) {
 
             stmt.setInt(1, customerId);
             boolean hasResult = stmt.execute();
@@ -778,11 +787,12 @@ public class BankDb {
         }
     }
 
-
-    /* =========================================================
-       E) TRANSACTION MANAGEMENT
-       (deposit/withdraw/transfer + read/reverse)
-       ========================================================= */
+    /*
+     * =========================================================
+     * E) TRANSACTION MANAGEMENT
+     * (deposit/withdraw/transfer + read/reverse)
+     * =========================================================
+     */
 
     /**
      * Performs a deposit transaction on an account.
@@ -796,7 +806,7 @@ public class BankDb {
     public void transactionDeposit(int accountId, double amount, String actorType, int actorId)
             throws SQLException {
         try (Connection conn = DbManager.getConnection();
-             CallableStatement stmt = conn.prepareCall("{CALL sp_transaction_deposit(?,?,?,?)}")) {
+                CallableStatement stmt = conn.prepareCall("{CALL sp_transaction_deposit(?,?,?,?)}")) {
 
             stmt.setInt(1, accountId);
             stmt.setBigDecimal(2, java.math.BigDecimal.valueOf(amount));
@@ -818,7 +828,7 @@ public class BankDb {
     public void transactionWithdraw(int accountId, double amount, String actorType, int actorId)
             throws SQLException {
         try (Connection conn = DbManager.getConnection();
-             CallableStatement stmt = conn.prepareCall("{CALL sp_transaction_withdraw(?,?,?,?)}")) {
+                CallableStatement stmt = conn.prepareCall("{CALL sp_transaction_withdraw(?,?,?,?)}")) {
 
             stmt.setInt(1, accountId);
             stmt.setBigDecimal(2, java.math.BigDecimal.valueOf(amount));
@@ -839,9 +849,9 @@ public class BankDb {
      * @throws SQLException if the stored procedure fails
      */
     public void transactionTransfer(int fromAccountId, int toAccountId, double amount,
-                                    String actorType, int actorId) throws SQLException {
+            String actorType, int actorId) throws SQLException {
         try (Connection conn = DbManager.getConnection();
-             CallableStatement stmt = conn.prepareCall("{CALL sp_transaction_transfer(?,?,?,?,?)}")) {
+                CallableStatement stmt = conn.prepareCall("{CALL sp_transaction_transfer(?,?,?,?,?)}")) {
 
             stmt.setInt(1, fromAccountId);
             stmt.setInt(2, toAccountId);
@@ -863,7 +873,7 @@ public class BankDb {
     public List<Map<String, Object>> transactionGetRecentByAccount(int accountId, int limit)
             throws SQLException {
         try (Connection conn = DbManager.getConnection();
-             CallableStatement stmt = conn.prepareCall("{CALL sp_transaction_get_recent_by_account(?,?)}")) {
+                CallableStatement stmt = conn.prepareCall("{CALL sp_transaction_get_recent_by_account(?,?)}")) {
 
             stmt.setInt(1, accountId);
             stmt.setInt(2, limit);
@@ -886,7 +896,7 @@ public class BankDb {
      */
     public List<Map<String, Object>> transactionGetById(long transactionId) throws SQLException {
         try (Connection conn = DbManager.getConnection();
-             CallableStatement stmt = conn.prepareCall("{CALL sp_transaction_get_by_id(?)}")) {
+                CallableStatement stmt = conn.prepareCall("{CALL sp_transaction_get_by_id(?)}")) {
 
             stmt.setLong(1, transactionId);
             boolean hasResult = stmt.execute();
@@ -910,7 +920,7 @@ public class BankDb {
     public void transactionReverse(int actorEmployeeId, long transactionId, String reason)
             throws SQLException {
         try (Connection conn = DbManager.getConnection();
-             CallableStatement stmt = conn.prepareCall("{CALL sp_transaction_reverse(?,?,?)}")) {
+                CallableStatement stmt = conn.prepareCall("{CALL sp_transaction_reverse(?,?,?)}")) {
 
             stmt.setInt(1, actorEmployeeId);
             stmt.setLong(2, transactionId);
@@ -919,10 +929,11 @@ public class BankDb {
         }
     }
 
-
-    /* =========================================================
-       F) AUDIT & MONITORING
-       ========================================================= */
+    /*
+     * =========================================================
+     * F) AUDIT & MONITORING
+     * =========================================================
+     */
 
     /**
      * Retrieves audit log entries for a specific branch within a time range.
@@ -936,7 +947,7 @@ public class BankDb {
     public List<Map<String, Object>> auditGetByBranch(int branchId, Timestamp from, Timestamp to)
             throws SQLException {
         try (Connection conn = DbManager.getConnection();
-             CallableStatement stmt = conn.prepareCall("{CALL sp_audit_get_by_branch(?,?,?)}")) {
+                CallableStatement stmt = conn.prepareCall("{CALL sp_audit_get_by_branch(?,?,?)}")) {
 
             stmt.setInt(1, branchId);
             stmt.setTimestamp(2, from);
@@ -964,10 +975,10 @@ public class BankDb {
      * @throws SQLException if a database access error occurs
      */
     public List<Map<String, Object>> auditGetForActor(String actorType, int actorId,
-                                                      Timestamp from, Timestamp to)
+            Timestamp from, Timestamp to)
             throws SQLException {
         try (Connection conn = DbManager.getConnection();
-             CallableStatement stmt = conn.prepareCall("{CALL sp_audit_get_for_actor(?,?,?,?)}")) {
+                CallableStatement stmt = conn.prepareCall("{CALL sp_audit_get_for_actor(?,?,?,?)}")) {
 
             stmt.setString(1, actorType); // "CUSTOMER" or "EMPLOYEE"
             stmt.setInt(2, actorId);
@@ -995,10 +1006,10 @@ public class BankDb {
      * @throws SQLException if a database access error occurs
      */
     public List<Map<String, Object>> auditGetForTarget(String targetType, int targetId,
-                                                       Timestamp from, Timestamp to)
+            Timestamp from, Timestamp to)
             throws SQLException {
         try (Connection conn = DbManager.getConnection();
-             CallableStatement stmt = conn.prepareCall("{CALL sp_audit_get_for_target(?,?,?,?)}")) {
+                CallableStatement stmt = conn.prepareCall("{CALL sp_audit_get_for_target(?,?,?,?)}")) {
 
             stmt.setString(1, targetType);
             stmt.setInt(2, targetId);
@@ -1015,10 +1026,11 @@ public class BankDb {
         }
     }
 
-
-    /* =========================================================
-       G) REPORTING / ADMIN EXTRAS
-       ========================================================= */
+    /*
+     * =========================================================
+     * G) REPORTING / ADMIN EXTRAS
+     * =========================================================
+     */
 
     /**
      * Returns a summary report for a branch in a given time period.
@@ -1030,10 +1042,10 @@ public class BankDb {
      * @throws SQLException if a database access error occurs
      */
     public List<Map<String, Object>> reportBranchSummary(int branchId,
-                                                         Timestamp from,
-                                                         Timestamp to) throws SQLException {
+            Timestamp from,
+            Timestamp to) throws SQLException {
         try (Connection conn = DbManager.getConnection();
-             CallableStatement stmt = conn.prepareCall("{CALL sp_report_branch_summary(?,?,?)}")) {
+                CallableStatement stmt = conn.prepareCall("{CALL sp_report_branch_summary(?,?,?)}")) {
 
             stmt.setInt(1, branchId);
             stmt.setTimestamp(2, from);
@@ -1049,16 +1061,16 @@ public class BankDb {
         }
     }
 
-     /**
-     * Returns a combined list of all customers and employees for the admin dashboard.
+    /**
+     * Returns a combined list of all customers and employees for the admin
+     * dashboard.
      * Each row has:
-     *   user_id, user_type, name, email, phone_number, dob, address, role,
-     *   branch_name, branch_id
+     * user_id, user_type, name, email, phone_number, dob, address, role,
+     * branch_name, branch_id
      */
     public List<Map<String, Object>> adminGetAllUsers() throws SQLException {
         try (Connection conn = DbManager.getConnection();
-             CallableStatement stmt =
-                     conn.prepareCall("{CALL sp_admin_get_all_users()}")) {
+                CallableStatement stmt = conn.prepareCall("{CALL sp_admin_get_all_users()}")) {
 
             boolean hasResult = stmt.execute();
             if (hasResult) {
@@ -1067,6 +1079,42 @@ public class BankDb {
                 }
             }
             return Collections.emptyList();
+        }
+    }
+
+    public void adminConvertEmployeeToCustomer(int actorAdminId, int employeeId) throws SQLException {
+        try (Connection conn = DbManager.getConnection();
+                CallableStatement stmt = conn.prepareCall("{CALL sp_admin_employee_to_customer(?,?)}")) {
+
+            stmt.setInt(1, actorAdminId);
+            stmt.setInt(2, employeeId);
+            stmt.execute();
+        }
+    }
+
+    public void adminConvertCustomerToEmployee(
+            int actorAdminId,
+            int customerId,
+            String newRole, // "TELLER","ADMIN"
+            int newBranchId,
+            String newAdminSecondaryPlain // may be null unless role = ADMIN
+    ) throws SQLException {
+
+        try (Connection conn = DbManager.getConnection();
+                CallableStatement stmt = conn.prepareCall("{CALL sp_admin_customer_to_employee(?,?,?,?,?)}")) {
+
+            stmt.setInt(1, actorAdminId);
+            stmt.setInt(2, customerId);
+            stmt.setString(3, newRole);
+            stmt.setInt(4, newBranchId);
+
+            if (newAdminSecondaryPlain != null && !newAdminSecondaryPlain.isBlank()) {
+                stmt.setString(5, newAdminSecondaryPlain);
+            } else {
+                stmt.setNull(5, java.sql.Types.VARCHAR);
+            }
+
+            stmt.execute();
         }
     }
 
@@ -1080,10 +1128,10 @@ public class BankDb {
      * @throws SQLException if a database access error occurs
      */
     public List<Map<String, Object>> reportCustomerActivity(int customerId,
-                                                            Timestamp from,
-                                                            Timestamp to) throws SQLException {
+            Timestamp from,
+            Timestamp to) throws SQLException {
         try (Connection conn = DbManager.getConnection();
-             CallableStatement stmt = conn.prepareCall("{CALL sp_report_customer_activity(?,?,?)}")) {
+                CallableStatement stmt = conn.prepareCall("{CALL sp_report_customer_activity(?,?,?)}")) {
 
             stmt.setInt(1, customerId);
             stmt.setTimestamp(2, from);
@@ -1100,7 +1148,8 @@ public class BankDb {
     }
 
     /**
-     * Applies monthly interest for all applicable accounts in a branch. ---------------NOT USED---------------
+     * Applies monthly interest for all applicable accounts in a branch.
+     * ---------------NOT USED---------------
      *
      * @param actorEmployeeId employee executing the operation (for audit)
      * @param branchId        branch whose accounts will be updated
@@ -1108,7 +1157,7 @@ public class BankDb {
      */
     public void applyMonthlyInterest(int actorEmployeeId, int branchId) throws SQLException {
         try (Connection conn = DbManager.getConnection();
-             CallableStatement stmt = conn.prepareCall("{CALL sp_apply_monthly_interest(?,?)}")) {
+                CallableStatement stmt = conn.prepareCall("{CALL sp_apply_monthly_interest(?,?)}")) {
 
             stmt.setInt(1, actorEmployeeId);
             stmt.setInt(2, branchId);
@@ -1116,28 +1165,30 @@ public class BankDb {
         }
     }
 
-/* =========================================================
-   H) BRANCH LOOKUP (needed for Create Account)
-   ========================================================= */
+    /*
+     * =========================================================
+     * H) BRANCH LOOKUP (needed for Create Account)
+     * =========================================================
+     */
 
-/**
- * Returns all branches from the database as Branch model objects.
- * Uses a direct SELECT on the branch table.
- */
+    /**
+     * Returns all branches from the database as Branch model objects.
+     * Uses a direct SELECT on the branch table.
+     */
     public List<Branch> getAllBranches() throws SQLException {
 
         String sql = "SELECT branch_id, branch_code, branch_name, branch_address FROM branch";
 
         try (Connection conn = DbManager.getConnection();
-            PreparedStatement stmt = conn.prepareStatement(sql);
-            ResultSet rs = stmt.executeQuery()) {
+                PreparedStatement stmt = conn.prepareStatement(sql);
+                ResultSet rs = stmt.executeQuery()) {
 
             List<Branch> result = new ArrayList<>();
 
             while (rs.next()) {
-                int branchId   = rs.getInt("branch_id");
-                String code    = rs.getString("branch_code");
-                String name    = rs.getString("branch_name");
+                int branchId = rs.getInt("branch_id");
+                String code = rs.getString("branch_code");
+                String name = rs.getString("branch_name");
                 String address = rs.getString("branch_address");
 
                 Branch b = new Branch(branchId, code, name, address);
@@ -1154,21 +1205,21 @@ public class BankDb {
      *
      * This method relies on a stored procedure:
      *
-     *   sp_admin_update_user_role(
-     *       IN p_actor_admin_id INT,
-     *       IN p_target_employee_id INT,
-     *       IN p_new_role VARCHAR(50),
-     *       IN p_new_branch_id INT,
-     *       IN p_admin_secondary_password_plain VARCHAR(255),
-     *       IN p_new_admin_secondary_password_plain VARCHAR(255)
-     *   )
+     * sp_admin_update_user_role(
+     * IN p_actor_admin_id INT,
+     * IN p_target_employee_id INT,
+     * IN p_new_role VARCHAR(50),
+     * IN p_new_branch_id INT,
+     * IN p_admin_secondary_password_plain VARCHAR(255),
+     * IN p_new_admin_secondary_password_plain VARCHAR(255)
+     * )
      *
      * The stored procedure should:
-     *  - Verify the actor admin's secondary password.
-     *  - Update the target employee's role and branch.
-     *  - If p_new_admin_secondary_password_plain is not NULL and new role is ADMIN,
-     *    hash it and store it in admin_secondary_password_hash.
-     *  - Insert an entry in the audit log with the branch.
+     * - Verify the actor admin's secondary password.
+     * - Update the target employee's role and branch.
+     * - If p_new_admin_secondary_password_plain is not NULL and new role is ADMIN,
+     * hash it and store it in admin_secondary_password_hash.
+     * - Insert an entry in the audit log with the branch.
      */
     public void adminUpdateUserRole(
             int actorAdminId,
@@ -1176,12 +1227,10 @@ public class BankDb {
             String newRole,
             Integer newBranchId,
             String adminSecondaryPasswordPlain,
-            String newAdminSecondaryPasswordPlain
-    ) throws SQLException {
+            String newAdminSecondaryPasswordPlain) throws SQLException {
 
         try (Connection conn = DbManager.getConnection();
-                CallableStatement stmt =
-                        conn.prepareCall("{CALL sp_admin_update_user_role(?,?,?,?,?,?)}")) {
+                CallableStatement stmt = conn.prepareCall("{CALL sp_admin_update_user_role(?,?,?,?,?,?)}")) {
 
             stmt.setInt(1, actorAdminId);
             stmt.setInt(2, targetEmployeeId);
@@ -1203,74 +1252,75 @@ public class BankDb {
     // Audit Log
 
     /**
-     * Searches the audit log using optional filters on branch, actor, and time range.
+     * Searches the audit log using optional filters on branch, actor, and time
+     * range.
      * <p>
      * All parameters are nullable. When {@code null}, they are passed as SQL NULL
-     * to the stored procedure {@code sp_audit_log_search}, meaning "no filter" for that field.
+     * to the stored procedure {@code sp_audit_log_search}, meaning "no filter" for
+     * that field.
      *
-     * @param branchId  optional branch ID to filter by; {@code null} for all branches
-     * @param actorType optional actor type ("CUSTOMER", "EMPLOYEE"), or {@code null} for both
+     * @param branchId  optional branch ID to filter by; {@code null} for all
+     *                  branches
+     * @param actorType optional actor type ("CUSTOMER", "EMPLOYEE"), or
+     *                  {@code null} for both
      * @param actorId   optional actor ID to filter by; {@code null} for any actor
      * @param from      optional start timestamp; {@code null} for no lower bound
      * @param to        optional end timestamp; {@code null} for no upper bound
-     * @return list of audit log rows matching the given criteria; empty list if none
+     * @return list of audit log rows matching the given criteria; empty list if
+     *         none
      * @throws SQLException if a database access error occurs
      */
     public List<Map<String, Object>> getAuditLog(
-        Integer branchId,
-        String actorType,        // "CUSTOMER", "EMPLOYEE" or null
-        Integer actorId,
-        Timestamp from,
-        Timestamp to
-) throws SQLException {
+            Integer branchId,
+            String actorType, // "CUSTOMER", "EMPLOYEE" or null
+            Integer actorId,
+            Timestamp from,
+            Timestamp to) throws SQLException {
 
-    List<Map<String, Object>> result = Collections.emptyList();
+        List<Map<String, Object>> result = Collections.emptyList();
 
-    try (Connection conn = DbManager.getConnection();
-         CallableStatement stmt =
-                 conn.prepareCall("{CALL sp_audit_log_search(?,?,?,?,?)}")) {
+        try (Connection conn = DbManager.getConnection();
+                CallableStatement stmt = conn.prepareCall("{CALL sp_audit_log_search(?,?,?,?,?)}")) {
 
-        if (branchId == null) {
-            stmt.setNull(1, Types.INTEGER);
-        } else {
-            stmt.setInt(1, branchId);
-        }
+            if (branchId == null) {
+                stmt.setNull(1, Types.INTEGER);
+            } else {
+                stmt.setInt(1, branchId);
+            }
 
-        if (actorType == null || actorType.isBlank()) {
-            stmt.setNull(2, Types.VARCHAR);
-        } else {
-            stmt.setString(2, actorType);
-        }
+            if (actorType == null || actorType.isBlank()) {
+                stmt.setNull(2, Types.VARCHAR);
+            } else {
+                stmt.setString(2, actorType);
+            }
 
-        if (actorId == null) {
-            stmt.setNull(3, Types.INTEGER);
-        } else {
-            stmt.setInt(3, actorId);
-        }
+            if (actorId == null) {
+                stmt.setNull(3, Types.INTEGER);
+            } else {
+                stmt.setInt(3, actorId);
+            }
 
-        if (from == null) {
-            stmt.setNull(4, Types.TIMESTAMP);
-        } else {
-            stmt.setTimestamp(4, from);
-        }
+            if (from == null) {
+                stmt.setNull(4, Types.TIMESTAMP);
+            } else {
+                stmt.setTimestamp(4, from);
+            }
 
-        if (to == null) {
-            stmt.setNull(5, Types.TIMESTAMP);
-        } else {
-            stmt.setTimestamp(5, to);
-        }
+            if (to == null) {
+                stmt.setNull(5, Types.TIMESTAMP);
+            } else {
+                stmt.setTimestamp(5, to);
+            }
 
-        boolean hasResult = stmt.execute();
-        if (hasResult) {
-            try (ResultSet rs = stmt.getResultSet()) {
-                result = ResultSetUtils.toList(rs);
+            boolean hasResult = stmt.execute();
+            if (hasResult) {
+                try (ResultSet rs = stmt.getResultSet()) {
+                    result = ResultSetUtils.toList(rs);
+                }
             }
         }
+
+        return result;
     }
-
-    return result;
-}
-
-
 
 }
