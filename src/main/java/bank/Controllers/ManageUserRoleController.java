@@ -81,7 +81,7 @@ public class ManageUserRoleController {
 
         // Populate role options
         roleCombo.setItems(FXCollections.observableArrayList(
-                "Customer", "Teller", "Manager", "Admin"
+                "Customer", "Teller", "Admin"
         ));
 
         // Default to current role if available
