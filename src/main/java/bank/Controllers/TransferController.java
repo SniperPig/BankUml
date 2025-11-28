@@ -70,77 +70,74 @@ public class TransferController {
      *
      * @param event the event triggered when the user clicks the confirm button
      */
-    @FXML
-    private void handleTransfer(ActionEvent event) {
-        double amount;
-        int toAccountId;
+   @FXML
+private void handleTransfer(ActionEvent event) {
+    double amount;
+    int toAccountId;
 
-        try {
-            amount = Double.parseDouble(amountField.getText());
-            toAccountId = Integer.parseInt(destinationAccountField.getText());
-        } catch (NumberFormatException e) {
-            notificationLabel.setStyle("-fx-text-fill: red;");
-            notificationLabel.setText("Please enter valid numbers for account and amount.");
-            return;
-        }
-
-        if (amount <= 0) {
-            notificationLabel.setStyle("-fx-text-fill: red;");
-            notificationLabel.setText("Transfer amount must be positive.");
-            return;
-        }
-
-        if (amount > fromAccount.getBalance()) {
-            notificationLabel.setStyle("-fx-text-fill: red;");
-            notificationLabel.setText("Insufficient balance for this transfer.");
-            return;
-        }
-
-        try {
-            // 1) Perform transfer in DB
-            db.transactionTransfer(fromAccount.getAccountId(), toAccountId, amount,
-                    "CUSTOMER", fromAccount.getCustomerId());
-
-            // 2) Update sender balance locally
-            fromAccount.setBalance(fromAccount.getBalance() - amount);
-
-            // 3) Fetch receiver info
-            List<Map<String, Object>> receiverData = db.accountGetById(toAccountId);
-            if (!receiverData.isEmpty()) {
-                Map<String, Object> receiverMap = receiverData.get(0);
-                double receiverBalance =
-                        ((java.math.BigDecimal) receiverMap.get("balance")).doubleValue();
-                System.out.println("Receiver new balance: " + receiverBalance);
-            }
-
-            // 4) Add sender transaction locally
-            List<Map<String, Object>> lastTx =
-                    db.transactionGetRecentByAccount(fromAccount.getAccountId(), 1);
-
-            long transactionId = (Long) lastTx.get(0).get("transaction_id");
-
-            Transaction transaction = new Transaction(
-                    (int) transactionId,
-                    fromAccount,
-                    amount,
-                    "TRANSFER",
-                    "COMPLETED",
-                    "CUSTOMER",
-                    java.time.LocalDateTime.now()
-            );
-            fromAccount.addTransaction(transaction);
-
-            notificationLabel.setStyle("-fx-text-fill: green;");
-            notificationLabel.setText("Transfer successful!");
-            amountField.clear();
-            destinationAccountField.clear();
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-            notificationLabel.setStyle("-fx-text-fill: red;");
-            notificationLabel.setText("Transfer failed: " + e.getMessage());
-        }
+    try {
+        amount = Double.parseDouble(amountField.getText());
+        toAccountId = Integer.parseInt(destinationAccountField.getText());
+    } catch (NumberFormatException e) {
+        notificationLabel.setStyle("-fx-text-fill: red;");
+        notificationLabel.setText("Please enter valid numbers for account and amount.");
+        return;
     }
+
+    if (amount <= 0) {
+        notificationLabel.setStyle("-fx-text-fill: red;");
+        notificationLabel.setText("Transfer amount must be positive.");
+        return;
+    }
+
+    if (amount > fromAccount.getBalance()) {
+        notificationLabel.setStyle("-fx-text-fill: red;");
+        notificationLabel.setText("Insufficient balance for this transfer.");
+        return;
+    }
+
+    try {
+        // 1) Withdraw from sender
+        db.transactionWithdraw(fromAccount.getAccountId(), amount, "CUSTOMER", fromAccount.getCustomerId());
+        fromAccount.setBalance(fromAccount.getBalance() - amount);
+
+        // 2) Deposit into recipient (uses deposit function)
+        db.transactionDeposit(toAccountId, amount, "CUSTOMER", fromAccount.getCustomerId());
+
+        // 3) Update sender transactions locally
+        List<Map<String, Object>> lastTx = db.transactionGetRecentByAccount(fromAccount.getAccountId(), 1);
+        long transactionId = (Long) lastTx.get(0).get("transaction_id");
+        Transaction transaction = new Transaction(
+                (int) transactionId,
+                fromAccount,
+                amount,
+                "TRANSFER",
+                "COMPLETED",
+                "CUSTOMER",
+                java.time.LocalDateTime.now()
+        );
+        fromAccount.addTransaction(transaction);
+
+        // 4) Optional: log or fetch receiver balance
+        List<Map<String, Object>> receiverData = db.accountGetById(toAccountId);
+        if (!receiverData.isEmpty()) {
+            Map<String, Object> receiverMap = receiverData.get(0);
+            double receiverBalance = ((java.math.BigDecimal) receiverMap.get("balance")).doubleValue();
+            System.out.println("Receiver new balance: " + receiverBalance);
+        }
+
+        notificationLabel.setStyle("-fx-text-fill: green;");
+        notificationLabel.setText("Transfer successful!");
+        amountField.clear();
+        destinationAccountField.clear();
+
+    } catch (SQLException e) {
+        e.printStackTrace();
+        notificationLabel.setStyle("-fx-text-fill: red;");
+        notificationLabel.setText("Transfer failed: " + e.getMessage());
+    }
+}
+
 
     /**
      * Navigates back to the appropriate dashboard (customer or teller).
