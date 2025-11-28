@@ -1049,6 +1049,27 @@ public class BankDb {
         }
     }
 
+     /**
+     * Returns a combined list of all customers and employees for the admin dashboard.
+     * Each row has:
+     *   user_id, user_type, name, email, phone_number, dob, address, role,
+     *   branch_name, branch_id
+     */
+    public List<Map<String, Object>> adminGetAllUsers() throws SQLException {
+        try (Connection conn = DbManager.getConnection();
+             CallableStatement stmt =
+                     conn.prepareCall("{CALL sp_admin_get_all_users()}")) {
+
+            boolean hasResult = stmt.execute();
+            if (hasResult) {
+                try (ResultSet rs = stmt.getResultSet()) {
+                    return ResultSetUtils.toList(rs);
+                }
+            }
+            return Collections.emptyList();
+        }
+    }
+
     /**
      * Returns a detailed activity report for a specific customer in a time period.
      *
@@ -1079,7 +1100,7 @@ public class BankDb {
     }
 
     /**
-     * Applies monthly interest for all applicable accounts in a branch.
+     * Applies monthly interest for all applicable accounts in a branch. ---------------NOT USED---------------
      *
      * @param actorEmployeeId employee executing the operation (for audit)
      * @param branchId        branch whose accounts will be updated

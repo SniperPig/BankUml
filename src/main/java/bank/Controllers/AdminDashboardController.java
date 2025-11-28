@@ -4,8 +4,7 @@ import bank.Models.Customer;
 import bank.Models.Employee;
 import bank.SessionManager;
 import bank.Controllers.ManageUserRoleController;
-
-
+import bank.DB.BankDb;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -25,6 +24,7 @@ import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 /**
  * Controller for the Administrator Dashboard.
@@ -44,26 +44,39 @@ public class AdminDashboardController {
             "Branch"
     };
 
-    @FXML private Label welcomeLabel;
+    private final BankDb bankDb = new BankDb();
 
-    @FXML private TextField searchField;
-    @FXML private ComboBox<String> searchCategoryBox;
+    @FXML
+    private Label welcomeLabel;
 
-    @FXML private TableView<UserRecord> userTable;
-    @FXML private TableColumn<UserRecord, String> idColumn;
-    @FXML private TableColumn<UserRecord, String> typeColumn;
-    @FXML private TableColumn<UserRecord, String> nameColumn;
-    @FXML private TableColumn<UserRecord, String> emailColumn;
-    @FXML private TableColumn<UserRecord, String> phoneColumn;
-    @FXML private TableColumn<UserRecord, String> dobColumn;
-    @FXML private TableColumn<UserRecord, String> addressColumn;
-    @FXML private TableColumn<UserRecord, String> roleColumn;
-    @FXML private TableColumn<UserRecord, String> branchColumn;
+    @FXML
+    private TextField searchField;
+    @FXML
+    private ComboBox<String> searchCategoryBox;
 
-    private final ObservableList<UserRecord> masterData =
-            FXCollections.observableArrayList();
-    private final FilteredList<UserRecord> filteredData =
-            new FilteredList<>(masterData, record -> true);
+    @FXML
+    private TableView<UserRecord> userTable;
+    @FXML
+    private TableColumn<UserRecord, String> idColumn;
+    @FXML
+    private TableColumn<UserRecord, String> typeColumn;
+    @FXML
+    private TableColumn<UserRecord, String> nameColumn;
+    @FXML
+    private TableColumn<UserRecord, String> emailColumn;
+    @FXML
+    private TableColumn<UserRecord, String> phoneColumn;
+    @FXML
+    private TableColumn<UserRecord, String> dobColumn;
+    @FXML
+    private TableColumn<UserRecord, String> addressColumn;
+    @FXML
+    private TableColumn<UserRecord, String> roleColumn;
+    @FXML
+    private TableColumn<UserRecord, String> branchColumn;
+
+    private final ObservableList<UserRecord> masterData = FXCollections.observableArrayList();
+    private final FilteredList<UserRecord> filteredData = new FilteredList<>(masterData, record -> true);
 
     /**
      * JavaFX initialize hook. Sets up the table and loads data.
@@ -84,26 +97,18 @@ public class AdminDashboardController {
         searchCategoryBox.getSelectionModel().select("Name");
 
         // Setup table columns
-        idColumn.setCellValueFactory(cell ->
-                new SimpleStringProperty(String.valueOf(cell.getValue().getUserId())));
-        typeColumn.setCellValueFactory(cell ->
-                new SimpleStringProperty(safeString(cell.getValue().getUserType())));
-        nameColumn.setCellValueFactory(cell ->
-                new SimpleStringProperty(safeString(cell.getValue().getName())));
-        emailColumn.setCellValueFactory(cell ->
-                new SimpleStringProperty(safeString(cell.getValue().getEmail())));
-        phoneColumn.setCellValueFactory(cell ->
-                new SimpleStringProperty(safeString(cell.getValue().getPhoneNumber())));
+        idColumn.setCellValueFactory(cell -> new SimpleStringProperty(String.valueOf(cell.getValue().getUserId())));
+        typeColumn.setCellValueFactory(cell -> new SimpleStringProperty(safeString(cell.getValue().getUserType())));
+        nameColumn.setCellValueFactory(cell -> new SimpleStringProperty(safeString(cell.getValue().getName())));
+        emailColumn.setCellValueFactory(cell -> new SimpleStringProperty(safeString(cell.getValue().getEmail())));
+        phoneColumn.setCellValueFactory(cell -> new SimpleStringProperty(safeString(cell.getValue().getPhoneNumber())));
         dobColumn.setCellValueFactory(cell -> {
             LocalDate dob = cell.getValue().getDob();
             return new SimpleStringProperty(dob == null ? "" : dob.toString());
         });
-        addressColumn.setCellValueFactory(cell ->
-                new SimpleStringProperty(safeString(cell.getValue().getAddress())));
-        roleColumn.setCellValueFactory(cell ->
-                new SimpleStringProperty(safeString(cell.getValue().getRole())));
-        branchColumn.setCellValueFactory(cell ->
-                new SimpleStringProperty(safeString(cell.getValue().getBranchName())));
+        addressColumn.setCellValueFactory(cell -> new SimpleStringProperty(safeString(cell.getValue().getAddress())));
+        roleColumn.setCellValueFactory(cell -> new SimpleStringProperty(safeString(cell.getValue().getRole())));
+        branchColumn.setCellValueFactory(cell -> new SimpleStringProperty(safeString(cell.getValue().getBranchName())));
 
         // Load initial data
         populateData();
@@ -120,17 +125,9 @@ public class AdminDashboardController {
     private void populateData() throws SQLException {
         masterData.clear();
 
-        // Customers
-        List<Customer> customers = Customer.fetchAllCustomers(); // adjust if needed
-        for (Customer c : customers) {
-            UserRecord rec = UserRecord.fromCustomer(c);
-            masterData.add(rec);
-        }
-
-        // Employees
-        List<Employee> employees = Employee.fetchAllEmployees(); // adjust if needed
-        for (Employee e : employees) {
-            UserRecord rec = UserRecord.fromEmployee(e);
+        List<Map<String, Object>> rows = bankDb.adminGetAllUsers();
+        for (Map<String, Object> row : rows) {
+            UserRecord rec = UserRecord.fromRow(row);
             masterData.add(rec);
         }
     }
@@ -193,7 +190,8 @@ public class AdminDashboardController {
      * <p>
      * Ensures a user is selected in the table, then loads the
      * {@code ManageUserRole.fxml} view and passes the selected {@link UserRecord}
-     * to {@link ManageUserRoleController#initializeData(AdminDashboardController.UserRecord)}.
+     * to
+     * {@link ManageUserRoleController#initializeData(AdminDashboardController.UserRecord)}.
      *
      * @param event the action event triggered by the "Manage User" control
      */
@@ -285,7 +283,8 @@ public class AdminDashboardController {
     /**
      * Utility method to switch scenes to another FXML view.
      *
-     * @param event        the originating action event, used to access the current stage
+     * @param event        the originating action event, used to access the current
+     *                     stage
      * @param resourcePath the classpath to the FXML resource to load
      * @throws RuntimeException if the FXML resource cannot be loaded
      */
@@ -302,10 +301,12 @@ public class AdminDashboardController {
     }
 
     /**
-     * Returns an empty string if the provided value is {@code null}, otherwise returns it unchanged.
+     * Returns an empty string if the provided value is {@code null}, otherwise
+     * returns it unchanged.
      *
      * @param value the input string which may be {@code null}
-     * @return an empty string if {@code value} is {@code null}; otherwise {@code value}
+     * @return an empty string if {@code value} is {@code null}; otherwise
+     *         {@code value}
      */
     private String safeString(String value) {
         return value == null ? "" : value;
@@ -330,7 +331,8 @@ public class AdminDashboardController {
         private final Integer employeeId;
 
         /**
-         * Constructs a {@code UserRecord} representing either a customer or an employee.
+         * Constructs a {@code UserRecord} representing either a customer or an
+         * employee.
          *
          * @param userId      unique ID used in the table (customer or employee ID)
          * @param userType    "CUSTOMER" or "EMPLOYEE"
@@ -341,20 +343,22 @@ public class AdminDashboardController {
          * @param address     postal address
          * @param role        employee role; empty string for customers
          * @param branchName  employee branch name; empty string for customers
-         * @param customerId  underlying customer ID, or {@code null} if this represents an employee
-         * @param employeeId  underlying employee ID, or {@code null} if this represents a customer
+         * @param customerId  underlying customer ID, or {@code null} if this represents
+         *                    an employee
+         * @param employeeId  underlying employee ID, or {@code null} if this represents
+         *                    a customer
          */
         private UserRecord(int userId,
-                           String userType,
-                           String name,
-                           String email,
-                           String phoneNumber,
-                           LocalDate dob,
-                           String address,
-                           String role,
-                           String branchName,
-                           Integer customerId,
-                           Integer employeeId) {
+                String userType,
+                String name,
+                String email,
+                String phoneNumber,
+                LocalDate dob,
+                String address,
+                String role,
+                String branchName,
+                Integer customerId,
+                Integer employeeId) {
             this.userId = userId;
             this.userType = userType;
             this.name = name;
@@ -376,18 +380,17 @@ public class AdminDashboardController {
          */
         public static UserRecord fromCustomer(Customer c) {
             return new UserRecord(
-                    c.getCustomerID(),              // adjust getter names if needed
+                    c.getCustomerID(), // adjust getter names if needed
                     "CUSTOMER",
                     c.getName(),
                     c.getEmail(),
                     c.getPhoneNumber(),
                     c.getDOB(),
                     c.getAddress(),
-                    "",                             // customers don't have an employee role
-                    "",                             // no branch for customers
+                    "", // customers don't have an employee role
+                    "", // no branch for customers
                     c.getCustomerID(),
-                    null
-            );
+                    null);
         }
 
         /**
@@ -411,8 +414,58 @@ public class AdminDashboardController {
                     e.getRole(),
                     branchName,
                     null,
-                    e.getEmployeeID()
-            );
+                    e.getEmployeeID());
+        }
+
+        public static UserRecord fromRow(Map<String, Object> row) {
+            if (row == null) {
+                throw new IllegalArgumentException("Row cannot be null");
+            }
+
+            int userId = ((Number) row.get("user_id")).intValue();
+            String userType = string(row.get("user_type"));
+            String name = string(row.get("name"));
+            String email = string(row.get("email"));
+            String phone = string(row.get("phone_number"));
+
+            LocalDate dob = null;
+            Object dobObj = row.get("dob");
+            if (dobObj instanceof java.sql.Date sqlDate) {
+                dob = sqlDate.toLocalDate();
+            } else if (dobObj instanceof java.time.LocalDate ld) {
+                dob = ld;
+            }
+
+            String address = string(row.get("address"));
+            String role = string(row.get("role"));
+            String branchName = string(row.get("branch_name"));
+
+            Integer branchId = null;
+            Object branchIdObj = row.get("branch_id");
+            if (branchIdObj instanceof Number n) {
+                branchId = n.intValue();
+            }
+
+            // customerId/employeeId are for later logic if needed
+            Integer customerId = "CUSTOMER".equalsIgnoreCase(userType) ? userId : null;
+            Integer employeeId = "EMPLOYEE".equalsIgnoreCase(userType) ? userId : null;
+
+            return new UserRecord(
+                    userId,
+                    userType,
+                    name,
+                    email,
+                    phone,
+                    dob,
+                    address,
+                    role,
+                    branchName,
+                    customerId,
+                    employeeId);
+        }
+
+        private static String string(Object o) {
+            return o == null ? "" : o.toString();
         }
 
         /**
