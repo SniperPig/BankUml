@@ -344,7 +344,7 @@ private void handleCreate(javafx.event.ActionEvent event) {
      */
     @FXML
     private void handleBackToHome(ActionEvent event) {
-        switchScene(event, "/bank/Views/LoginForm.fxml");
+        switchScene(event, "/bank/Views/TellerDashboard.fxml");
     }
 
     /**
